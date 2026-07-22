@@ -1,0 +1,3555 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Banco Digital Independente · Investimentos + Chat</title>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== BASE RESET & VARIÁVEIS (fundo vermelho) ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --bg: #8B0000;
+      --surface: #FFE0E0;
+      --surface-hover: #FFC8C8;
+      --primary: #0056D2;
+      --primary-dark: #003D99;
+      --primary-light: #E6F0FF;
+      --primary-gradient: linear-gradient(135deg, #0056D2, #003D99);
+      --gold: #FFB800;
+      --gold-light: #FFF3CD;
+      --text-primary: #2D0000;
+      --text-secondary: #4D0000;
+      --text-muted: #6B3A3A;
+      --border: rgba(139, 0, 0, 0.25);
+      --shadow-sm: 0 2px 8px rgba(139, 0, 0, 0.15);
+      --shadow-md: 0 8px 30px rgba(139, 0, 0, 0.25);
+      --shadow-lg: 0 20px 60px rgba(139, 0, 0, 0.35);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-pill: 30px;
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-heading: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    body {
+      background: var(--bg);
+      font-family: var(--font);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+    .shell {
+      width: 100vw;
+      height: 100vh;
+      max-width: 100%;
+      max-height: 100%;
+      background: var(--bg);
+      border-radius: 0;
+      box-shadow: none;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+      border: none;
+      padding: 0;
+      background: var(--bg);
+    }
+    .app-header {
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex-shrink: 0;
+      border-radius: 0;
+    }
+    .app-header .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .app-header .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--primary-gradient);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      font-family: var(--font-heading);
+    }
+    .app-header h1 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .app-header .header-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      background: var(--bg);
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      color: #fff;
+    }
+    .app-header .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #25D366;
+      color: #FFFFFF;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 12px;
+      padding: 5px 14px;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      transition: var(--transition);
+      border: none;
+      cursor: pointer;
+      line-height: 1.4;
+      box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+    }
+    .whatsapp-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+    }
+    .whatsapp-btn:active {
+      transform: scale(0.97);
+    }
+    .panel {
+      padding: 16px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      overflow-y: auto;
+      flex: 1;
+      border-radius: 0;
+    }
+    .tabs {
+      display: flex;
+      background: var(--bg);
+      border-radius: var(--radius-pill);
+      padding: 3px;
+      gap: 3px;
+      margin-bottom: 18px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 12px;
+      color: #fff;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      transition: var(--transition);
+    }
+    .tab.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .tab:focus-visible,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    form {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+    form.active {
+      display: flex;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.01em;
+    }
+    .field input,
+    .field textarea {
+      width: 100%;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font);
+      transition: var(--transition);
+    }
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: #A0B3CC;
+    }
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+      outline: none;
+    }
+    .field textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .field input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .phone-row {
+      display: flex;
+      gap: 6px;
+    }
+    .phone-prefix {
+      flex: 0 0 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .err {
+      font-size: 12px;
+      color: #D32F2F;
+      margin-top: 2px;
+      display: none;
+    }
+    .err.show {
+      display: block;
+    }
+    .field.invalid input,
+    .field.invalid textarea {
+      border-color: #D32F2F;
+      background: #FFF5F5;
+    }
+    .field.valid input,
+    .field.valid textarea {
+      border-color: #2E7D32;
+    }
+    .submit {
+      margin-top: 2px;
+      background: var(--primary-gradient);
+      border: none;
+      color: #FFFFFF;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 14px rgba(0, 86, 210, 0.25);
+      letter-spacing: 0.01em;
+    }
+    .submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 86, 210, 0.35);
+    }
+    .submit:active {
+      transform: scale(0.98);
+    }
+    .submit[disabled] {
+      opacity: 0.6;
+      cursor: default;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .form-msg {
+      font-size: 13px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      display: none;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+    .form-msg.show {
+      display: block;
+    }
+    .form-msg.error {
+      background: #FFF5F5;
+      color: #B71C1C;
+      border-left: 4px solid #D32F2F;
+    }
+    .form-msg.ok {
+      background: #F0F9F0;
+      color: #1B5E20;
+      border-left: 4px solid #2E7D32;
+    }
+    .success {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      padding-top: 2px;
+    }
+    .success.active {
+      display: flex;
+    }
+    .success h2 {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      margin: 0;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+    .success p {
+      color: var(--text-secondary);
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 13px;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .card div {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      color: var(--text-secondary);
+    }
+    .card div b {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .balance-card {
+      background: var(--primary-gradient);
+      border: none;
+      color: #fff;
+      box-shadow: 0 8px 30px rgba(0, 86, 210, 0.25);
+    }
+    .balance-card div {
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .balance-card div b {
+      color: #fff;
+    }
+    .balance-card .val {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 4px;
+      letter-spacing: -0.02em;
+    }
+    .comunicado-banner {
+      background: var(--gold-light);
+      border-left: 4px solid var(--gold);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 13px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .comunicado-banner .comunicado-titulo {
+      font-weight: 700;
+      color: #B87A00;
+      margin-bottom: 4px;
+    }
+    .comunicado-banner .comunicado-texto {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .comunicado-banner .comunicado-data {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-align: right;
+    }
+    .comunicado-banner .btn-apagar-comunicado {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      line-height: 1;
+    }
+    .comunicado-banner .btn-apagar-comunicado:hover {
+      background: rgba(0,0,0,0.1);
+      color: var(--text-primary);
+    }
+    .ops-tabs {
+      display: flex;
+      gap: 4px;
+      width: 100%;
+      margin-top: 2px;
+      flex-wrap: wrap;
+      background: transparent;
+      padding: 0;
+    }
+    .ops-tabs .tab {
+      padding: 6px 12px;
+      font-size: 11px;
+      background: var(--bg);
+      flex: 0 1 auto;
+      border-radius: var(--radius-pill);
+      color: #fff;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .ops-tabs .tab:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .ops-tabs .tab.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(0, 86, 210, 0.3);
+    }
+    .op-form {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      background: #fff;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-top: 4px;
+    }
+    .op-form.active {
+      display: flex;
+    }
+    .historico-lista {
+      max-height: 280px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 4px;
+    }
+    .historico-item {
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      border-left: 4px solid var(--text-muted);
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .historico-item:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .historico-item .tipo {
+      font-weight: 600;
+      min-width: 70px;
+    }
+    .historico-item .valor {
+      font-weight: 700;
+    }
+    .historico-item .data {
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+    .historico-item .desc {
+      color: var(--text-secondary);
+      font-size: 11px;
+      flex: 1;
+      margin: 0 6px;
+    }
+    .historico-item.credito {
+      border-left-color: var(--primary);
+    }
+    .historico-item.debito {
+      border-left-color: #D32F2F;
+    }
+    .historico-item.investimento {
+      border-left-color: var(--gold);
+    }
+    .historico-vazio {
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px 0;
+      font-size: 13px;
+    }
+    .invest-section {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 14px;
+      border: 1px solid var(--border);
+      margin-top: 0;
+      width: 100%;
+      box-shadow: var(--shadow-sm);
+    }
+    .invest-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+      margin: 10px 0 6px;
+      width: 100%;
+    }
+    .invest-card {
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 14px 12px;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      box-shadow: var(--shadow-sm);
+    }
+    .invest-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .invest-card .plano {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    .invest-card .retorno {
+      font-size: 13px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .invest-card .meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .invest-card .btn-investir {
+      margin-top: 6px;
+      background: var(--primary-gradient);
+      border: none;
+      color: #FFFFFF;
+      font-weight: 700;
+      padding: 6px 0;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 2px 8px rgba(0, 86, 210, 0.2);
+    }
+    .invest-card .btn-investir:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 86, 210, 0.3);
+    }
+    .invest-card .btn-investir:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .invest-card .btn-investir:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .invest-msg {
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: 4px 0 2px;
+    }
+    .invest-ativos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+      width: 100%;
+    }
+    .invest-ativo-card {
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 14px 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .invest-ativo-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .invest-ativo-card .plano {
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .invest-ativo-card .tempo-restante {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 3px;
+      font-family: var(--font-heading);
+    }
+    .invest-ativo-card .status {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .invest-ativo-card .lucro {
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+    .invest-ativo-card .progresso {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .logout {
+      margin-top: 12px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--text-secondary);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      transition: var(--transition);
+    }
+    .logout:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .spin {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #FFFFFF;
+      display: inline-block;
+      vertical-align: -2px;
+      margin-right: 6px;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 37, 64, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(6px);
+      padding: 16px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 28px 24px 24px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      text-align: center;
+      animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn {
+      from {
+        transform: scale(0.92) translateY(10px);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+    }
+    .modal-box .modal-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .modal-box .modal-msg {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      margin: 4px 0 16px;
+      font-weight: 500;
+    }
+    .modal-box .modal-msg.error {
+      color: #B71C1C;
+    }
+    .modal-box .modal-msg.ok {
+      color: #1B5E20;
+    }
+    .modal-box .modal-btn {
+      background: var(--primary-gradient);
+      border: none;
+      color: #FFFFFF;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      padding: 8px 28px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-size: 13px;
+      transition: var(--transition);
+      box-shadow: 0 4px 14px rgba(0, 86, 210, 0.25);
+    }
+    .modal-box .modal-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 86, 210, 0.35);
+    }
+    .admin-solicitacoes {
+      max-height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .admin-solicitacao {
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      border-left: 4px solid var(--gold);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .admin-solicitacao:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .admin-solicitacao .info {
+      flex: 1;
+      font-size: 12px;
+    }
+    .admin-solicitacao .info strong {
+      color: var(--text-primary);
+    }
+    .admin-solicitacao .info .detalhes {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .admin-solicitacao .acoes {
+      display: flex;
+      gap: 6px;
+    }
+    .admin-solicitacao .acoes button {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 3px 12px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 11px;
+      transition: var(--transition);
+    }
+    .admin-solicitacao .acoes button:hover {
+      transform: translateY(-1px);
+    }
+    .admin-solicitacao .acoes .aprovar {
+      background: #2E7D32;
+      color: #FFFFFF;
+      border-color: #2E7D32;
+    }
+    .admin-solicitacao .acoes .aprovar:hover {
+      background: #1B5E20;
+    }
+    .admin-solicitacao .acoes .rejeitar {
+      background: #D32F2F;
+      color: #FFFFFF;
+      border-color: #D32F2F;
+    }
+    .admin-solicitacao .acoes .rejeitar:hover {
+      background: #B71C1C;
+    }
+    .admin-limites {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .admin-limites .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .admin-limites .campo label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .admin-limites .campo input,
+    .admin-limites .campo select {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: var(--font);
+      transition: var(--transition);
+    }
+    .admin-limites .campo input:focus,
+    .admin-limites .campo select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+      outline: none;
+    }
+    .admin-info-deposito {
+      margin-top: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .admin-info-deposito textarea {
+      width: 100%;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: var(--font);
+      resize: vertical;
+      min-height: 60px;
+      transition: var(--transition);
+    }
+    .admin-info-deposito textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+      outline: none;
+    }
+    .admin-info-deposito textarea::placeholder {
+      color: #A0B3CC;
+    }
+    .admin-planos-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 260px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    .admin-plano-item {
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+      border-left: 4px solid var(--primary);
+      font-size: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .admin-plano-item:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .admin-plano-item .info {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .admin-plano-item .info span {
+      color: var(--text-secondary);
+    }
+    .admin-plano-item .info .label-plano {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .admin-plano-item .acoes {
+      display: flex;
+      gap: 4px;
+    }
+    .admin-plano-item .acoes button {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .admin-plano-item .acoes button:hover {
+      transform: translateY(-1px);
+    }
+    .admin-plano-item .acoes .editar {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+    .admin-plano-item .acoes .editar:hover {
+      background: var(--primary-dark);
+    }
+    .admin-plano-item .acoes .remover {
+      background: #D32F2F;
+      color: #FFFFFF;
+      border-color: #D32F2F;
+    }
+    .admin-plano-item .acoes .remover:hover {
+      background: #B71C1C;
+    }
+    .admin-plano-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .admin-plano-form .linha {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 2fr;
+      gap: 8px;
+      align-items: end;
+    }
+    .admin-plano-form .linha .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .admin-plano-form .linha .campo label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .admin-plano-form .linha .campo input {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      color: var(--text-primary);
+      font-size: 12px;
+      width: 100%;
+      transition: var(--transition);
+    }
+    .admin-plano-form .linha .campo input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+      outline: none;
+    }
+    .admin-plano-form .btn-plano {
+      background: var(--primary-gradient);
+      border: none;
+      color: #FFFFFF;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 12px;
+      transition: var(--transition);
+      box-shadow: 0 2px 8px rgba(0, 86, 210, 0.2);
+    }
+    .admin-plano-form .btn-plano:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 86, 210, 0.3);
+    }
+    .admin-plano-form .btn-plano.cancelar {
+      background: var(--bg);
+      color: #fff;
+      box-shadow: none;
+    }
+    .admin-plano-form .btn-plano.cancelar:hover {
+      background: var(--border);
+    }
+    @media (max-width: 700px) {
+      .admin-plano-form .linha {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 480px) {
+      .admin-plano-form .linha {
+        grid-template-columns: 1fr;
+      }
+    }
+    .admin-comunicado {
+      margin-top: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .admin-comunicado textarea {
+      width: 100%;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: var(--font);
+      resize: vertical;
+      min-height: 60px;
+      transition: var(--transition);
+    }
+    .admin-comunicado textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+      outline: none;
+    }
+    .admin-comunicado textarea::placeholder {
+      color: #A0B3CC;
+    }
+    .admin-bonus {
+      margin-top: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .admin-bonus .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .admin-bonus .campo label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .admin-bonus .campo input {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: var(--text-primary);
+      font-size: 13px;
+      width: 100%;
+      max-width: 200px;
+      transition: var(--transition);
+    }
+    .admin-bonus .campo input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+      outline: none;
+    }
+    .admin-bonus .campo .atual {
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 500;
+    }
+    #chatContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      height: 100%;
+      min-height: 250px;
+    }
+    #chatContatos {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      max-height: 70px;
+      overflow-y: auto;
+    }
+    .chat-contato {
+      background: #fff;
+      padding: 4px 14px;
+      border-radius: var(--radius-pill);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .chat-contato:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .chat-contato.ativo {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #FFFFFF;
+    }
+    .chat-contato .badge {
+      background: #D32F2F;
+      color: #FFFFFF;
+      border-radius: 50%;
+      padding: 0 6px;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 18px;
+    }
+    #chatMensagens {
+      flex: 1;
+      max-height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 4px 0;
+    }
+    .msg-item {
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      max-width: 80%;
+      align-self: flex-start;
+      border: 1px solid var(--border);
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      color: #fff;
+    }
+    .msg-item.minha {
+      align-self: flex-end;
+      background: var(--primary-gradient);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+    .msg-item .msg-texto {
+      font-size: 13px;
+      word-wrap: break-word;
+      line-height: 1.5;
+    }
+    .msg-item .msg-hora {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      text-align: right;
+      opacity: 0.7;
+    }
+    .msg-item.minha .msg-hora {
+      color: rgba(255, 255, 255, 0.75);
+    }
+    .msg-item .btn-apagar-msg {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      padding: 2px 4px;
+      border-radius: 4px;
+      line-height: 1;
+    }
+    .msg-item .btn-apagar-msg:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .msg-item.minha .btn-apagar-msg {
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .msg-item.minha .btn-apagar-msg:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .chat-input-row input {
+      flex: 1;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 8px 16px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: var(--font);
+      transition: var(--transition);
+    }
+    .chat-input-row input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+      outline: none;
+    }
+    .chat-input-row input::placeholder {
+      color: #A0B3CC;
+    }
+    .chat-input-row .submit {
+      margin-top: 0;
+      padding: 8px 20px;
+      flex-shrink: 0;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+    }
+    .chat-vazio {
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px 0;
+      font-size: 13px;
+    }
+    .deposito-info {
+      background: #fff;
+      border-left: 4px solid var(--primary);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: var(--shadow-sm);
+    }
+    .saques-aprovados-lista {
+      max-height: 280px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 4px;
+    }
+    .saque-item {
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      border-left: 4px solid #2E7D32;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .saque-item:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .saque-item .usuario {
+      font-weight: 600;
+    }
+    .saque-item .valor {
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+    .saque-item .data {
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+    .saque-item .detalhes {
+      color: var(--text-secondary);
+      font-size: 11px;
+      flex: 1;
+      margin: 0 6px;
+    }
+    .saque-item .status-aprovado {
+      background: #2E7D32;
+      color: #FFFFFF;
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    @media (max-width: 820px) {
+      .invest-grid,
+      .invest-ativos-grid,
+      .admin-limites {
+        grid-template-columns: 1fr 1fr;
+      }
+      .app-header {
+        padding: 10px 14px 0 14px;
+      }
+      .panel {
+        padding: 12px 14px 14px;
+      }
+    }
+    @media (max-width: 480px) {
+      .invest-grid,
+      .invest-ativos-grid,
+      .admin-limites {
+        grid-template-columns: 1fr;
+      }
+      .modal-box {
+        padding: 20px 14px;
+      }
+      .msg-item {
+        max-width: 95%;
+      }
+      .app-header .brand h1 {
+        font-size: 14px;
+      }
+      .app-header .brand-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+      }
+      .whatsapp-btn {
+        font-size: 10px;
+        padding: 3px 10px;
+      }
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #C1D5E6;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #A0B3CC;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="shell">
+    <div class="app-header">
+      <div class="brand">
+        <div class="brand-icon">B</div>
+        <h1>Banco Digital</h1>
+      </div>
+      <div class="header-actions">
+        <span class="header-tag">Conta Digital · Angola</span>
+        <a href="https://chat.whatsapp.com/H2w8svk5GP4FgaWcMEwLht?s=cl&p=a&ilr=4" target="_blank" rel="noopener noreferrer" class="whatsapp-btn">💬 Grupo WhatsApp</a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div id="authArea">
+        <div class="tabs">
+          <button class="tab active" data-tab="registar" id="tabRegistar">Criar conta</button>
+          <button class="tab" data-tab="entrar" id="tabEntrar">Entrar</button>
+        </div>
+        <form id="formRegistar" class="active" novalidate>
+          <div class="field" id="f-nome">
+            <label for="nome">Nome completo</label>
+            <input id="nome" type="text" placeholder="Ex: Ana Kiala Ferreira" autocomplete="name" />
+            <div class="err" id="err-nome">Escreve o teu nome completo.</div>
+          </div>
+          <div class="field" id="f-telefone">
+            <label for="telefone">Número de telemóvel</label>
+            <div class="phone-row">
+              <div class="phone-prefix">+244</div>
+              <input id="telefone" type="tel" placeholder="9XX XXX XXX" autocomplete="tel" inputmode="numeric" maxlength="11" />
+            </div>
+            <div class="hint" style="font-size:11px;color:var(--text-muted);margin-top:3px;">Número angolano de 9 dígitos, a começar por 9.</div>
+            <div class="err" id="err-telefone">Número inválido. Usa o formato 9XX XXX XXX.</div>
+          </div>
+          <div class="field" id="f-senha">
+            <label for="senha">Senha</label>
+            <input id="senha" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+            <div class="err" id="err-senha">A senha deve ter pelo menos 6 caracteres.</div>
+          </div>
+          <div class="field" id="f-senha2">
+            <label for="senha2">Confirmar senha</label>
+            <input id="senha2" type="password" placeholder="Repete a senha" autocomplete="new-password" />
+            <div class="err" id="err-senha2">As senhas não coincidem.</div>
+          </div>
+          <div class="form-msg" id="msgRegistar"></div>
+          <button type="submit" class="submit" id="btnRegistar">Criar conta</button>
+        </form>
+        <form id="formEntrar" novalidate>
+          <div class="field" id="f-telefoneLogin">
+            <label for="telefoneLogin">Número de telemóvel</label>
+            <div class="phone-row">
+              <div class="phone-prefix">+244</div>
+              <input id="telefoneLogin" type="tel" placeholder="9XX XXX XXX" autocomplete="tel" inputmode="numeric" maxlength="11" />
+            </div>
+            <div class="err" id="err-telefoneLogin">Número inválido. Usa o formato 9XX XXX XXX.</div>
+          </div>
+          <div class="field" id="f-senhaLogin">
+            <label for="senhaLogin">Senha</label>
+            <input id="senhaLogin" type="password" placeholder="A tua senha" autocomplete="current-password" />
+            <div class="err" id="err-senhaLogin">Introduz a tua senha.</div>
+          </div>
+          <div class="form-msg" id="msgEntrar"></div>
+          <button type="submit" class="submit" id="btnEntrar">Entrar</button>
+        </form>
+      </div>
+
+      <div class="success" id="successArea">
+        <h2 id="successTitle">Bem-vindo(a)!</h2>
+        <p id="successText">Gerencia a tua conta e investe com retornos garantidos.</p>
+        <div id="comunicadoBanner" style="display:none;" class="comunicado-banner">
+          <div class="comunicado-titulo">📢 Comunicado do Administrador</div>
+          <div class="comunicado-texto" id="comunicadoTexto"></div>
+          <div class="comunicado-data" id="comunicadoData"></div>
+          <button class="btn-apagar-comunicado" id="btnApagarComunicado" title="Apagar este comunicado apenas para si">✕</button>
+        </div>
+        <div class="card balance-card">
+          <div><span>Saldo disponível</span></div>
+          <div class="val" id="sucSaldo">0,00 Kz</div>
+        </div>
+        <div class="card">
+          <div><span>Nome</span><b id="sucNome">—</b></div>
+          <div><span>Número</span><b id="sucTelefone">—</b></div>
+        </div>
+
+        <div class="tabs ops-tabs">
+          <button class="tab active" id="tabDep">Depositar</button>
+          <button class="tab" id="tabSaq">Sacar</button>
+          <button class="tab" id="tabTrans">Transferir</button>
+          <button class="tab" id="tabInvest">Investir</button>
+          <button class="tab" id="tabAtivos">Ativos</button>
+          <button class="tab" id="tabHistorico">Histórico</button>
+          <button class="tab" id="tabSaquesAprovados">✔️ Saques Aprovados</button>
+          <button class="tab" id="tabAdmin" style="display:none;">Admin</button>
+          <button class="tab" id="tabChat" style="display:flex;">Chat <span id="chatBadge" class="badge" style="display:none;background:#D32F2F;color:#fff;border-radius:50%;padding:0 5px;font-size:10px;font-weight:700;line-height:16px;margin-left:3px;">0</span></button>
+        </div>
+
+        <!-- Depósito -->
+        <form id="formDeposito" class="op-form active">
+          <div class="field"><label for="valDeposito">Valor a depositar (Kz)</label>
+            <input id="valDeposito" type="number" min="0" step="any" placeholder="Ex: 5000" /></div>
+          <div id="depositoInfoContainer" class="deposito-info" style="display:none;"></div>
+          <button type="submit" class="submit">Efetuar Depósito</button>
+        </form>
+
+        <!-- Saque -->
+        <form id="formSaque" class="op-form">
+          <div class="field"><label for="valSaque">Valor a levantar (Kz)</label>
+            <input id="valSaque" type="number" min="0" step="any" placeholder="Ex: 2000" /></div>
+          <div class="field"><label for="ibanSaque">IBAN (Número de conta bancária)</label>
+            <input id="ibanSaque" type="text" placeholder="Ex: AO06 0004 0000 0000 0000 0000 0" /></div>
+          <div class="field"><label for="nomeSaque">Nome do titular</label>
+            <input id="nomeSaque" type="text" disabled /></div>
+          <div class="field"><label for="descricaoSaque">Descrição (opcional)</label>
+            <textarea id="descricaoSaque" rows="2" placeholder="Motivo do levantamento..."></textarea>
+          </div>
+          <button type="submit" class="submit">Efetuar Levantamento</button>
+        </form>
+
+        <!-- Transferência -->
+        <form id="formTransferencia" class="op-form">
+          <div class="field"><label for="telDestino">Número do destinatário</label>
+            <div class="phone-row"><div class="phone-prefix">+244</div>
+            <input id="telDestino" type="tel" placeholder="9XX XXX XXX" maxlength="11" /></div>
+          </div>
+          <div class="field"><label for="valTransferencia">Valor (Kz)</label>
+            <input id="valTransferencia" type="number" min="0" step="any" placeholder="Ex: 1000" /></div>
+          <button type="submit" class="submit">Transferir</button>
+        </form>
+
+        <!-- Investimentos -->
+        <div id="formInvestimento" class="op-form">
+          <div class="invest-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
+              <span style="font-weight:700;font-size:14px;">📈 Planos de Investimento</span>
+              <span style="font-size:11px;color:var(--text-muted);">clique no plano para investir</span>
+            </div>
+            <div class="invest-grid" id="investGrid"></div>
+            <div id="investMsg" class="invest-msg"></div>
+          </div>
+        </div>
+
+        <!-- Ativos -->
+        <div id="formAtivos" class="op-form">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:700;font-size:14px;">⏳ Investimentos em andamento</span>
+            <span style="font-size:11px;color:var(--text-muted);">atualização automática</span>
+          </div>
+          <div id="ativosContainer" class="invest-ativos-grid"></div>
+        </div>
+
+        <!-- Histórico -->
+        <div id="formHistorico" class="op-form">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:700;font-size:14px;">📋 Movimentos recentes</span>
+            <button id="btnLimparHistorico" class="submit" style="padding:4px 12px;font-size:11px;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:var(--radius-pill);box-shadow:none;">Limpar histórico</button>
+          </div>
+          <div id="historicoContainer" class="historico-lista">
+            <div class="historico-vazio">Nenhum movimento registado.</div>
+          </div>
+        </div>
+
+        <!-- SAQUES APROVADOS -->
+        <div id="formSaquesAprovados" class="op-form">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:700;font-size:14px;">✔️ Histórico de Saques Aprovados</span>
+            <span style="font-size:11px;color:var(--text-muted);">todos os utilizadores</span>
+          </div>
+          <div id="saquesAprovadosContainer" class="saques-aprovados-lista">
+            <div class="historico-vazio">Nenhum saque aprovado até agora.</div>
+          </div>
+        </div>
+
+        <!-- Admin -->
+        <div id="formAdmin" class="op-form">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:700;font-size:14px;">⚙️ Painel de Administração</span>
+          </div>
+          <div style="border-bottom:1px solid var(--border);padding-bottom:10px;">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Solicitações Pendentes</div>
+            <div id="adminSolicitacoes" class="admin-solicitacoes">
+              <div class="historico-vazio">Nenhuma solicitação pendente.</div>
+            </div>
+          </div>
+          <div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-top:10px;">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📊 Planos de Investimento</div>
+            <div id="adminPlanosContainer"></div>
+          </div>
+          <div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-top:10px;">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Limites Globais</div>
+            <div class="admin-limites">
+              <div class="campo">
+                <label>Depósito mínimo (Kz)</label>
+                <input id="adminDepMinGlobal" type="number" step="any" min="0" placeholder="Ex: 100" />
+              </div>
+              <div class="campo">
+                <label>Levantamento mínimo (Kz)</label>
+                <input id="adminSaqMinGlobal" type="number" step="any" min="0" placeholder="Ex: 100" />
+              </div>
+            </div>
+            <button class="submit" id="btnSalvarLimitesGlobais" style="margin-top:6px;">Salvar limites globais</button>
+          </div>
+          <div style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-top:10px;">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">Limites por Utilizador</div>
+            <div class="admin-limites">
+              <div class="campo">
+                <label>Utilizador</label>
+                <select id="adminSelectUser"></select>
+              </div>
+              <div class="campo">
+                <label>Depósito mínimo (Kz)</label>
+                <input id="adminDepMinUser" type="number" step="any" min="0" placeholder="Ex: 200" />
+              </div>
+              <div class="campo">
+                <label>Levantamento mínimo (Kz)</label>
+                <input id="adminSaqMinUser" type="number" step="any" min="0" placeholder="Ex: 200" />
+              </div>
+            </div>
+            <button class="submit" id="btnSalvarLimitesUser" style="margin-top:6px;">Salvar limites do utilizador</button>
+          </div>
+          <div class="admin-info-deposito">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📝 Informações adicionais para depósito</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Este texto será exibido a todos os utilizadores na tela de depósito.</div>
+            <textarea id="adminDepositoInfo" placeholder="Ex: Transferências podem demorar até 24h. Envie comprovativo para o WhatsApp."></textarea>
+            <button class="submit" id="btnSalvarInfoDeposito" style="margin-top:6px;">Salvar informações</button>
+          </div>
+          <div class="admin-bonus">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">🎁 Bónus de Boas-Vindas</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Valor creditado automaticamente no saldo de cada novo utilizador no momento do registo.</div>
+            <div class="campo">
+              <label>Valor do bónus (Kz)</label>
+              <input id="adminBonusBoasVindas" type="number" step="any" min="0" placeholder="Ex: 500" />
+              <span class="atual" id="adminBonusAtual">Atual: 0,00 Kz</span>
+            </div>
+            <button class="submit" id="btnSalvarBonus" style="margin-top:6px;">Salvar bónus</button>
+          </div>
+          <div class="admin-comunicado">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📢 Enviar Comunicado para Todos os Utilizadores</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">O texto será enviado como mensagem no chat para cada utilizador e também exibido em destaque no dashboard.</div>
+            <textarea id="adminComunicado" placeholder="Escreve o comunicado que será enviado a todos os utilizadores..."></textarea>
+            <button class="submit" id="btnEnviarComunicado" style="margin-top:6px;">Enviar Comunicado</button>
+          </div>
+        </div>
+
+        <!-- Chat -->
+        <div id="formChat" class="op-form">
+          <div id="chatContainer">
+            <div id="chatContatos"></div>
+            <div id="chatMensagens">
+              <div class="chat-vazio">Seleciona um contacto para conversar.</div>
+            </div>
+            <div class="chat-input-row">
+              <input id="chatInput" type="text" placeholder="Escreve uma mensagem..." disabled />
+              <button class="submit" id="chatEnviar" disabled>Enviar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-msg" id="msgOp"></div>
+        <button class="logout" id="btnLogout">Terminar sessão</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <span class="modal-icon" id="modalIcon">✅</span>
+      <div class="modal-msg" id="modalMsg"></div>
+      <button class="modal-btn" id="modalBtn">Fechar</button>
+    </div>
+  </div>
+
+  <script>
+    // ===== FIREBASE CONFIGURAÇÃO =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBi3bkN4074Y7o846_xObHiIUmvv1s-B7w",
+      authDomain: "kwanzapayy.firebaseapp.com",
+      databaseURL: "https://kwanzapayy-default-rtdb.firebaseio.com",
+      projectId: "kwanzapayy",
+      storageBucket: "kwanzapayy.firebasestorage.app",
+      messagingSenderId: "350764605895",
+      appId: "1:350764605895:web:ffd6145d768d582594b9e2"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // ===== REFERÊNCIAS DO BANCO DE DADOS =====
+    const DB_ACCOUNTS = 'accounts';
+    const DB_PLANOS = 'planos';
+    const DB_CONFIG = 'config';
+    const DB_SOLICITACOES = 'solicitacoes';
+    const DB_SAQUES_APROVADOS = 'saques_aprovados';
+    const DB_MENSAGENS = 'mensagens';
+    const ADMIN_PHONE = '949097324';
+
+    // ===== HELPERS =====
+    function hash(str) {
+      let h = 5381;
+      for (let i = 0; i < str.length; i++) { h = ((h << 5) + h) + str.charCodeAt(i);
+        h &= 0xffffffff; }
+      return 'h' + Math.abs(h).toString(36);
+    }
+
+    function digitsOnly(v) { return v.replace(/\D/g, ''); }
+
+    function formatPhoneDisplay(v) {
+      const d = digitsOnly(v).slice(0, 9);
+      if (d.length > 6) return d.slice(0, 3) + ' ' + d.slice(3, 6) + ' ' + d.slice(6);
+      if (d.length > 3) return d.slice(0, 3) + ' ' + d.slice(3);
+      return d;
+    }
+
+    function formatCurrency(val) { return Number(val || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Kz'; }
+
+    function isValidPhone(v) { return /^9[1-9]\d{7}$/.test(digitsOnly(v)); }
+
+    function setError(fieldId, show) {
+      const f = document.getElementById(fieldId);
+      if (!f) return;
+      f.classList.toggle('invalid', show);
+      const e = f.querySelector('.err');
+      if (e) e.classList.toggle('show', show);
+    }
+
+    function clearMsg(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.className = 'form-msg';
+        el.textContent = '';
+        el.style.display = 'none';
+      }
+    }
+
+    // ===== MODAL =====
+    function showModal(text, kind) {
+      const overlay = document.getElementById('modalOverlay');
+      const msgEl = document.getElementById('modalMsg');
+      const iconEl = document.getElementById('modalIcon');
+      if (!overlay || !msgEl) return;
+      msgEl.textContent = text;
+      msgEl.className = 'modal-msg ' + kind;
+      if (kind === 'error') iconEl.textContent = '❌';
+      else if (kind === 'ok') iconEl.textContent = '✅';
+      else iconEl.textContent = 'ℹ️';
+      overlay.classList.add('active');
+    }
+
+    function hideModal() {
+      const overlay = document.getElementById('modalOverlay');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    function showMsg(id, text, kind) {
+      showModal(text, kind);
+    }
+
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+      if (e.target === this || e.target.classList.contains('modal-btn')) {
+        hideModal();
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') hideModal();
+    });
+
+    ['telefone', 'telefoneLogin', 'telDestino'].forEach(id => {
+      const inp = document.getElementById(id);
+      if (inp) inp.addEventListener('input', function() { this.value = formatPhoneDisplay(this.value); });
+    });
+
+    // ===== TABS AUTENTICAÇÃO =====
+    const tabReg = document.getElementById('tabRegistar'),
+      tabEnt = document.getElementById('tabEntrar');
+    const formReg = document.getElementById('formRegistar'),
+      formEnt = document.getElementById('formEntrar');
+
+    function switchAuth(which) {
+      const isReg = which === 'registar';
+      tabReg.classList.toggle('active', isReg);
+      tabEnt.classList.toggle('active', !isReg);
+      formReg.classList.toggle('active', isReg);
+      formEnt.classList.toggle('active', !isReg);
+    }
+    tabReg.addEventListener('click', () => switchAuth('registar'));
+    tabEnt.addEventListener('click', () => switchAuth('entrar'));
+
+    // ===== FUNÇÕES DE ACESSO AO FIREBASE =====
+    
+    // Contas
+    async function getAccount(phone) {
+      try {
+        const snapshot = await database.ref(`${DB_ACCOUNTS}/${phone}`).once('value');
+        return snapshot.val();
+      } catch (error) {
+        console.error('Erro ao buscar conta:', error);
+        return null;
+      }
+    }
+
+    async function saveAccount(phone, data) {
+      try {
+        await database.ref(`${DB_ACCOUNTS}/${phone}`).set(data);
+        return true;
+      } catch (error) {
+        console.error('Erro ao salvar conta:', error);
+        return false;
+      }
+    }
+
+    async function getAllUsers() {
+      try {
+        const snapshot = await database.ref(DB_ACCOUNTS).once('value');
+        const data = snapshot.val();
+        if (!data) return [];
+        return Object.values(data);
+      } catch (error) {
+        console.error('Erro ao buscar utilizadores:', error);
+        return [];
+      }
+    }
+
+    // Planos
+    async function getPlanos() {
+      try {
+        const snapshot = await database.ref(DB_PLANOS).once('value');
+        const data = snapshot.val();
+        if (data) return data;
+        // Planos default
+        const defaultPlanos = [
+          { label: '1000 Kz · 3 dias', invest: 1000, dias: 3, retorno: 2600 },
+          { label: '3000 Kz · 7 dias', invest: 3000, dias: 7, retorno: 6500 },
+          { label: '6000 Kz · 30 dias', invest: 6000, dias: 30, retorno: 12000 },
+          { label: '10000 Kz · 30 dias', invest: 10000, dias: 30, retorno: 20000 },
+          { label: '15000 Kz · 30 dias', invest: 15000, dias: 30, retorno: 35000 },
+          { label: '30000 Kz · 30 dias', invest: 30000, dias: 30, retorno: 75000 },
+          { label: '67000 Kz · 60 dias', invest: 67000, dias: 60, retorno: 260500 },
+          { label: '100000 Kz · 6 meses', invest: 100000, dias: 180, retorno: 550700 },
+          { label: '200000 Kz · 6 meses', invest: 200000, dias: 180, retorno: 775000 },
+          { label: '300000 Kz · 6 meses', invest: 300000, dias: 180, retorno: 1030000 }
+        ];
+        await savePlanos(defaultPlanos);
+        return defaultPlanos;
+      } catch (error) {
+        console.error('Erro ao buscar planos:', error);
+        return [];
+      }
+    }
+
+    async function savePlanos(lista) {
+      try {
+        await database.ref(DB_PLANOS).set(lista);
+        return true;
+      } catch (error) {
+        console.error('Erro ao salvar planos:', error);
+        return false;
+      }
+    }
+
+    // Configurações
+    async function getConfig() {
+      try {
+        const snapshot = await database.ref(DB_CONFIG).once('value');
+        const data = snapshot.val();
+        return data || { depositoMinGlobal: 0, saqueMinGlobal: 0, depositoInfo: '', comunicado: null, bonusBoasVindas: 0 };
+      } catch (error) {
+        console.error('Erro ao buscar configurações:', error);
+        return { depositoMinGlobal: 0, saqueMinGlobal: 0, depositoInfo: '', comunicado: null, bonusBoasVindas: 0 };
+      }
+    }
+
+    async function saveConfig(config) {
+      try {
+        await database.ref(DB_CONFIG).set(config);
+        return true;
+      } catch (error) {
+        console.error('Erro ao salvar configurações:', error);
+        return false;
+      }
+    }
+
+    // Solicitações
+    async function getSolicitacoes() {
+      try {
+        const snapshot = await database.ref(DB_SOLICITACOES).once('value');
+        const data = snapshot.val();
+        return data ? Object.values(data) : [];
+      } catch (error) {
+        console.error('Erro ao buscar solicitações:', error);
+        return [];
+      }
+    }
+
+    async function saveSolicitacoes(lista) {
+      try {
+        const obj = {};
+        lista.forEach(item => { obj[item.id] = item; });
+        await database.ref(DB_SOLICITACOES).set(obj);
+        return true;
+      } catch (error) {
+        console.error('Erro ao salvar solicitações:', error);
+        return false;
+      }
+    }
+
+    async function criarSolicitacao(usuarioTelefone, tipo, valor, detalhes = {}) {
+      const lista = await getSolicitacoes();
+      const nova = {
+        id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        usuario: usuarioTelefone,
+        tipo: tipo,
+        valor: valor,
+        status: 'pendente',
+        data: new Date().toISOString(),
+        iban: detalhes.iban || '',
+        nomeTitular: detalhes.nomeTitular || '',
+        descricao: detalhes.descricao || ''
+      };
+      lista.push(nova);
+      await saveSolicitacoes(lista);
+      return nova;
+    }
+
+    // Saques Aprovados
+    async function getSaquesAprovados() {
+      try {
+        const snapshot = await database.ref(DB_SAQUES_APROVADOS).once('value');
+        const data = snapshot.val();
+        return data ? Object.values(data) : [];
+      } catch (error) {
+        console.error('Erro ao buscar saques aprovados:', error);
+        return [];
+      }
+    }
+
+    async function saveSaquesAprovados(lista) {
+      try {
+        const obj = {};
+        lista.forEach((item, index) => { obj[index] = item; });
+        await database.ref(DB_SAQUES_APROVADOS).set(obj);
+        return true;
+      } catch (error) {
+        console.error('Erro ao salvar saques aprovados:', error);
+        return false;
+      }
+    }
+
+    async function adicionarSaqueAprovado(usuarioTelefone, valor, iban, nomeTitular, descricao, dataAprovacao) {
+      const lista = await getSaquesAprovados();
+      const acc = await getAccount(usuarioTelefone);
+      const nome = acc ? acc.nome : 'Desconhecido';
+      
+      lista.push({
+        nome: nome,
+        valor: valor,
+        data: dataAprovacao || new Date().toISOString(),
+        descricao: descricao || '',
+        status: 'APROVADO'
+      });
+      await saveSaquesAprovados(lista);
+      return lista;
+    }
+
+    // Mensagens (Chat)
+    async function getMensagens() {
+      try {
+        const snapshot = await database.ref(DB_MENSAGENS).once('value');
+        const data = snapshot.val();
+        return data ? Object.values(data) : [];
+      } catch (error) {
+        console.error('Erro ao buscar mensagens:', error);
+        return [];
+      }
+    }
+
+    async function saveMensagens(lista) {
+      try {
+        const obj = {};
+        lista.forEach(item => { obj[item.id] = item; });
+        await database.ref(DB_MENSAGENS).set(obj);
+        return true;
+      } catch (error) {
+        console.error('Erro ao salvar mensagens:', error);
+        return false;
+      }
+    }
+
+    async function enviarMensagem(de, para, texto) {
+      if (!texto || texto.trim() === '') return false;
+      const lista = await getMensagens();
+      const nova = {
+        id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+        de: de,
+        para: para,
+        texto: texto.trim(),
+        timestamp: new Date().toISOString(),
+        lida: false
+      };
+      lista.push(nova);
+      await saveMensagens(lista);
+      return true;
+    }
+
+    async function apagarMensagemParaUtilizador(msgId, userPhone) {
+      const lista = await getMensagens();
+      const novaLista = lista.filter(msg => {
+        if (msg.id === msgId) {
+          if (msg.de === userPhone || msg.para === userPhone) {
+            return false;
+          }
+          return true;
+        }
+        return true;
+      });
+      await saveMensagens(novaLista);
+      return novaLista;
+    }
+
+    // ===== APROVAR / REJEITAR SOLICITAÇÕES =====
+    async function aprovarSolicitacao(id) {
+      const lista = await getSolicitacoes();
+      const idx = lista.findIndex(s => s.id === id);
+      if (idx === -1) return false;
+      const sol = lista[idx];
+      if (sol.status !== 'pendente') return false;
+      const acc = await getAccount(sol.usuario);
+      if (!acc) return false;
+      if (sol.tipo === 'deposito') {
+        acc.saldo = (acc.saldo || 0) + sol.valor;
+        if (!acc.historico) acc.historico = [];
+        acc.historico.push({
+          tipo: 'depósito',
+          valor: sol.valor,
+          descricao: 'Depósito aprovado pelo admin',
+          data: new Date().toISOString(),
+          saldo: acc.saldo
+        });
+      } else if (sol.tipo === 'saque') {
+        if (acc.saldo < sol.valor) return false;
+        acc.saldo -= sol.valor;
+        if (!acc.historico) acc.historico = [];
+        let desc = 'Levantamento aprovado pelo admin';
+        if (sol.iban) desc += ' | IBAN: ' + sol.iban;
+        if (sol.descricao) desc += ' | Desc: ' + sol.descricao;
+        acc.historico.push({
+          tipo: 'saque',
+          valor: sol.valor,
+          descricao: desc,
+          data: new Date().toISOString(),
+          saldo: acc.saldo
+        });
+        await adicionarSaqueAprovado(
+          sol.usuario,
+          sol.valor,
+          sol.iban || '',
+          sol.nomeTitular || '',
+          sol.descricao || '',
+          new Date().toISOString()
+        );
+      } else {
+        return false;
+      }
+      await saveAccount(sol.usuario, acc);
+      sol.status = 'aprovado';
+      await saveSolicitacoes(lista);
+      return true;
+    }
+
+    async function rejeitarSolicitacao(id) {
+      const lista = await getSolicitacoes();
+      const idx = lista.findIndex(s => s.id === id);
+      if (idx === -1) return false;
+      const sol = lista[idx];
+      if (sol.status !== 'pendente') return false;
+      sol.status = 'rejeitado';
+      await saveSolicitacoes(lista);
+      return true;
+    }
+
+    // ===== CRIAR ADMIN =====
+    async function criarAdminSeNaoExistir() {
+      const adminPhone = '949097324';
+      const adminPass = '332211';
+      let acc = await getAccount(adminPhone);
+      if (!acc) {
+        acc = {
+          nome: 'Administrador',
+          telefone: adminPhone,
+          passwordHash: hash(adminPass),
+          saldo: 0,
+          investimentos: [],
+          historico: [],
+          isAdmin: true,
+          criadoEm: new Date().toISOString()
+        };
+        await saveAccount(adminPhone, acc);
+      } else {
+        if (!acc.isAdmin) {
+          acc.isAdmin = true;
+          await saveAccount(adminPhone, acc);
+        }
+      }
+      return acc;
+    }
+
+    // ===== VARIÁVEIS GLOBAIS =====
+    let activeUserPhone = null;
+    let activeUserIsAdmin = false;
+    let ativosInterval = null;
+    let processInterval = null;
+    let chatPollInterval = null;
+    let chatContatoAtual = null;
+    let planos = [];
+    let authListener = null;
+    let configListener = null;
+    let solicitacoesListener = null;
+    let mensagensListener = null;
+    let saquesAprovadosListener = null;
+    let accountsListener = null;
+
+    // ===== FUNÇÕES DE RENDERIZAÇÃO =====
+    
+    // Chat
+    async function renderChatContatos() {
+      const container = document.getElementById('chatContatos');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const mensagens = await getMensagens();
+      const meuPhone = activeUserPhone;
+      if (!meuPhone) return;
+
+      if (activeUserIsAdmin) {
+        const usersSet = new Set();
+        for (let msg of mensagens) {
+          if (msg.de === ADMIN_PHONE) usersSet.add(msg.para);
+          if (msg.para === ADMIN_PHONE) usersSet.add(msg.de);
+        }
+        const allUsers = await getAllUsers();
+        for (let u of allUsers) {
+          if (u.telefone !== ADMIN_PHONE) usersSet.add(u.telefone);
+        }
+
+        const usersArray = [];
+        for (let phone of usersSet) {
+          const acc = await getAccount(phone);
+          if (acc) {
+            usersArray.push({ phone, nome: acc.nome });
+          } else {
+            usersArray.push({ phone, nome: 'Utilizador ' + formatPhoneDisplay(phone) });
+          }
+        }
+        usersArray.sort((a, b) => a.nome.localeCompare(b.nome));
+
+        for (let user of usersArray) {
+          const div = document.createElement('div');
+          div.className = 'chat-contato';
+          if (user.phone === chatContatoAtual) div.classList.add('ativo');
+
+          const naoLidas = mensagens.filter(m => m.de === user.phone && m.para === ADMIN_PHONE && !m.lida).length;
+          let badgeHtml = '';
+          if (naoLidas > 0) {
+            badgeHtml = `<span class="badge">${naoLidas}</span>`;
+          }
+          div.innerHTML = `${user.nome} ${badgeHtml}`;
+          div.dataset.phone = user.phone;
+          div.addEventListener('click', function() {
+            chatContatoAtual = this.dataset.phone;
+            renderChatContatos();
+            renderChatMensagens();
+            document.getElementById('chatInput').disabled = false;
+            document.getElementById('chatEnviar').disabled = false;
+            marcarComoLidas(chatContatoAtual);
+            atualizarBadgeChat();
+          });
+          container.appendChild(div);
+        }
+      } else {
+        const div = document.createElement('div');
+        div.className = 'chat-contato ativo';
+        div.textContent = 'Administrador';
+        div.dataset.phone = ADMIN_PHONE;
+        chatContatoAtual = ADMIN_PHONE;
+        div.addEventListener('click', function() {
+          chatContatoAtual = this.dataset.phone;
+          renderChatContatos();
+          renderChatMensagens();
+          document.getElementById('chatInput').disabled = false;
+          document.getElementById('chatEnviar').disabled = false;
+          marcarComoLidas(chatContatoAtual);
+          atualizarBadgeChat();
+        });
+        container.appendChild(div);
+        if (!chatContatoAtual) chatContatoAtual = ADMIN_PHONE;
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('chatEnviar').disabled = false;
+      }
+    }
+
+    async function renderChatMensagens() {
+      const container = document.getElementById('chatMensagens');
+      if (!container) return;
+      if (!chatContatoAtual) {
+        container.innerHTML = '<div class="chat-vazio">Seleciona um contacto para conversar.</div>';
+        return;
+      }
+
+      const mensagens = await getMensagens();
+      const meuPhone = activeUserPhone;
+
+      const filtradas = mensagens.filter(m =>
+        (m.de === meuPhone && m.para === chatContatoAtual) ||
+        (m.de === chatContatoAtual && m.para === meuPhone)
+      ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+      if (filtradas.length === 0) {
+        container.innerHTML = '<div class="chat-vazio">Nenhuma mensagem ainda. Inicia a conversa!</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      for (let msg of filtradas) {
+        const div = document.createElement('div');
+        div.className = 'msg-item';
+        if (msg.de === meuPhone) div.classList.add('minha');
+
+        const data = new Date(msg.timestamp);
+        const hora = data.toLocaleTimeString('pt-AO', { hour: '2-digit', minute: '2-digit' });
+
+        const btnApagar = document.createElement('button');
+        btnApagar.className = 'btn-apagar-msg';
+        btnApagar.textContent = '✕';
+        btnApagar.title = 'Apagar esta mensagem apenas para si';
+        btnApagar.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (confirm('Apagar esta mensagem apenas para si?')) {
+            await apagarMensagemParaUtilizador(msg.id, meuPhone);
+            await renderChatMensagens();
+            await renderChatContatos();
+            await atualizarBadgeChat();
+          }
+        });
+
+        div.innerHTML = `
+          <div class="msg-texto">${msg.texto}</div>
+          <div class="msg-hora">${hora}</div>
+        `;
+        div.appendChild(btnApagar);
+        container.appendChild(div);
+      }
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function marcarComoLidas(contato) {
+      const meuPhone = activeUserPhone;
+      if (!meuPhone) return;
+      const lista = await getMensagens();
+      let alterado = false;
+      for (let msg of lista) {
+        if (msg.para === meuPhone && msg.de === contato && !msg.lida) {
+          msg.lida = true;
+          alterado = true;
+        }
+      }
+      if (alterado) {
+        await saveMensagens(lista);
+      }
+      return alterado;
+    }
+
+    async function atualizarBadgeChat() {
+      const badge = document.getElementById('chatBadge');
+      if (!badge) return;
+      const mensagens = await getMensagens();
+      const meuPhone = activeUserPhone;
+      if (!meuPhone) { badge.style.display = 'none'; return; }
+
+      let naoLidas = 0;
+      if (activeUserIsAdmin) {
+        naoLidas = mensagens.filter(m => m.para === ADMIN_PHONE && !m.lida).length;
+      } else {
+        naoLidas = mensagens.filter(m => m.de === ADMIN_PHONE && m.para === meuPhone && !m.lida).length;
+      }
+      if (naoLidas > 0) {
+        badge.textContent = naoLidas;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    // Histórico
+    function renderHistorico(accountOverride) {
+      const container = document.getElementById('historicoContainer');
+      if (!container) return;
+      if (!accountOverride && activeUserPhone) {
+        getAccount(activeUserPhone).then(acc => {
+          if (acc) renderHistorico(acc);
+        });
+        return;
+      }
+      const acc = accountOverride;
+      if (!acc) return;
+      const historico = acc.historico || [];
+      container.innerHTML = '';
+      if (historico.length === 0) {
+        container.innerHTML = '<div class="historico-vazio">Nenhum movimento registado.</div>';
+        return;
+      }
+      const sorted = [...historico].reverse();
+      sorted.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'historico-item';
+        if (item.tipo === 'depósito' || item.tipo === 'transferência recebida' || item.tipo === 'investimento concluído' || item.tipo === 'bónus de boas-vindas')
+          div.classList.add('credito');
+        else if (item.tipo === 'saque' || item.tipo === 'transferência enviada') div.classList.add('debito');
+        else if (item.tipo === 'investimento') div.classList.add('investimento');
+        else div.classList.add('credito');
+
+        const data = new Date(item.data);
+        const dataStr = data.toLocaleString('pt-AO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit',
+          minute: '2-digit' });
+
+        div.innerHTML = `
+          <span class="tipo">${item.tipo}</span>
+          <span class="desc">${item.descricao || ''}</span>
+          <span class="valor">${formatCurrency(item.valor)}</span>
+          <span class="data">${dataStr}</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Saques Aprovados
+    async function renderSaquesAprovados() {
+      const container = document.getElementById('saquesAprovadosContainer');
+      if (!container) return;
+      
+      try {
+        const lista = await getSaquesAprovados();
+        
+        if (!lista || lista.length === 0) {
+          container.innerHTML = '<div class="historico-vazio">Nenhum saque aprovado até agora.</div>';
+          return;
+        }
+        
+        const sorted = [...lista].reverse();
+        container.innerHTML = '';
+        
+        sorted.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'saque-item';
+          const data = new Date(item.data);
+          const dataStr = data.toLocaleString('pt-AO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit',
+            minute: '2-digit' });
+          
+          const descricaoHtml = item.descricao ? `<span class="detalhes">${item.descricao}</span>` : '';
+          const statusHtml = `<span class="status-aprovado">APROVADO</span>`;
+          
+          div.innerHTML = `
+            <span class="usuario">${item.nome || 'Desconhecido'}</span>
+            <span class="valor">${formatCurrency(item.valor)}</span>
+            ${descricaoHtml}
+            ${statusHtml}
+            <span class="data">${dataStr}</span>
+          `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Erro ao renderizar saques aprovados:', error);
+        container.innerHTML = '<div class="historico-vazio">Erro ao carregar saques aprovados.</div>';
+      }
+    }
+
+    // Ativos
+    function renderAtivos(account) {
+      const container = document.getElementById('ativosContainer');
+      if (!container) return;
+      if (!account) {
+        if (activeUserPhone) {
+          getAccount(activeUserPhone).then(acc => {
+            if (acc) renderAtivos(acc);
+          });
+        }
+        return;
+      }
+      const ativos = (account.investimentos || []).filter(inv => !inv.concluido);
+      if (ativos.length === 0) {
+        container.innerHTML = '<div class="historico-vazio">Nenhum investimento ativo no momento.</div>';
+        return;
+      }
+      let html = '';
+      for (let inv of ativos) {
+        const dataInicio = new Date(inv.data);
+        const fim = new Date(dataInicio.getTime() + inv.dias * 24 * 60 * 60 * 1000);
+        const agora = new Date();
+        const diff = Math.max(0, fim.getTime() - agora.getTime());
+        const dias = Math.floor(diff / (24 * 60 * 60 * 1000));
+        const horas = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+        const minutos = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+        const segundos = Math.floor((diff % (60 * 1000)) / 1000);
+        const tempoStr = `${dias}d ${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}m ${String(segundos).padStart(2, '0')}s`;
+
+        let progresso = '';
+        if (inv.dias === 30 || inv.dias === 180) {
+          const totalCreditado = inv.totalCreditado || 0;
+          progresso =
+            `<div class="progresso">Retorno acumulado: ${formatCurrency(totalCreditado)} / ${formatCurrency(inv.retorno)} (${Math.round(totalCreditado/inv.retorno*100)}%)</div>`;
+        }
+
+        html += `
+          <div class="invest-ativo-card">
+            <div class="plano">${inv.plano}</div>
+            <div>Investido: ${formatCurrency(inv.investido)}</div>
+            <div>Retorno esperado: ${formatCurrency(inv.retorno)}</div>
+            <div class="lucro">Lucro: ${formatCurrency(inv.retorno - inv.investido)}</div>
+            ${progresso}
+            <div class="tempo-restante">⏳ ${tempoStr}</div>
+            <div class="status">${diff > 0 ? 'Em andamento' : 'A vencer...'}</div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    // Investimentos
+    function renderInvestGrid(accountOverride) {
+      const grid = document.getElementById('investGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      if (!accountOverride && activeUserPhone) {
+        getAccount(activeUserPhone).then(accData => {
+          if (accData) buildGrid(accData);
+        });
+        return;
+      }
+      if (accountOverride) buildGrid(accountOverride);
+    }
+
+    function buildGrid(account) {
+      const grid = document.getElementById('investGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const saldo = account.saldo || 0;
+      if (!planos || planos.length === 0) {
+        grid.innerHTML = '<div class="historico-vazio">Nenhum plano disponível. Contacte o administrador.</div>';
+        return;
+      }
+      planos.forEach((p, idx) => {
+        const card = document.createElement('div');
+        card.className = 'invest-card';
+        const pode = saldo >= p.invest;
+        card.innerHTML = `
+          <div class="plano">${p.label}</div>
+          <div class="retorno">↗ +${formatCurrency(p.retorno - p.invest)}</div>
+          <div class="meta">Retorno: ${formatCurrency(p.retorno)}</div>
+          <button class="btn-investir" data-idx="${idx}" ${!pode ? 'disabled' : ''}>${pode ? 'Investir' : 'Saldo insuficiente'}</button>
+        `;
+        grid.appendChild(card);
+      });
+      grid.querySelectorAll('.btn-investir:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const idx = parseInt(this.dataset.idx);
+          const plano = planos[idx];
+          if (!plano) return;
+          const acc = await getAccount(activeUserPhone);
+          if (!acc) { showMsg('msgOp', 'Conta não encontrada.', 'error'); return; }
+          if (acc.saldo < plano.invest) { showMsg('msgOp', 'Saldo insuficiente para este plano.',
+            'error'); return; }
+          acc.saldo -= plano.invest;
+          if (!acc.investimentos) acc.investimentos = [];
+          acc.investimentos.push({
+            plano: plano.label,
+            investido: plano.invest,
+            retorno: plano.retorno,
+            data: new Date().toISOString(),
+            dias: plano.dias,
+            concluido: false,
+            totalCreditado: 0
+          });
+          await saveAccount(activeUserPhone, acc);
+          await registrarMovimento(activeUserPhone, 'investimento', plano.invest,
+            'Investimento em ' + plano.label + ' (retorno previsto ' + formatCurrency(plano.retorno) + ')');
+          document.getElementById('sucSaldo').textContent = formatCurrency(acc.saldo);
+          showMsg('msgOp', `Investimento em ${plano.label} realizado! Retorno previsto: ${formatCurrency(plano.retorno)}`,
+            'ok');
+          renderInvestGrid(acc);
+          renderHistorico(acc);
+          renderAtivos(acc);
+          const msgDiv = document.getElementById('investMsg');
+          if (msgDiv) msgDiv.textContent = '✅ Investimento registado. O retorno será creditado ao final do prazo.';
+        });
+      });
+    }
+
+    // ===== PROCESSAMENTO DE INVESTIMENTOS =====
+    async function processarInvestimentos() {
+      if (!activeUserPhone) return;
+      const acc = await getAccount(activeUserPhone);
+      if (!acc) return;
+      let alterado = false;
+      if (acc.investimentos) {
+        for (let inv of acc.investimentos) {
+          if (inv.concluido) continue;
+          const dataInicio = new Date(inv.data);
+          const agora = new Date();
+          const fim = new Date(dataInicio.getTime() + inv.dias * 24 * 60 * 60 * 1000);
+
+          if (inv.dias === 30 || inv.dias === 180) {
+            const horasPassadas = (agora - dataInicio) / (1000 * 60 * 60);
+            const retornoHora = inv.retorno / (inv.dias * 24);
+            const totalEsperado = Math.min(retornoHora * horasPassadas, inv.retorno);
+            if (totalEsperado > (inv.totalCreditado || 0)) {
+              const credito = totalEsperado - (inv.totalCreditado || 0);
+              if (credito > 0) {
+                acc.saldo = (acc.saldo || 0) + credito;
+                inv.totalCreditado = totalEsperado;
+                alterado = true;
+              }
+            }
+            if (inv.totalCreditado >= inv.retorno) {
+              inv.concluido = true;
+              inv.dataConclusao = new Date().toISOString();
+              if (!acc.historico) acc.historico = [];
+              acc.historico.push({
+                tipo: 'investimento concluído',
+                valor: inv.retorno,
+                descricao: 'Investimento concluído: ' + inv.plano,
+                data: new Date().toISOString(),
+                saldo: acc.saldo
+              });
+              alterado = true;
+            }
+          } else {
+            if (agora >= fim) {
+              acc.saldo = (acc.saldo || 0) + inv.retorno;
+              inv.concluido = true;
+              inv.dataConclusao = new Date().toISOString();
+              if (!acc.historico) acc.historico = [];
+              acc.historico.push({
+                tipo: 'investimento concluído',
+                valor: inv.retorno,
+                descricao: 'Investimento concluído: ' + inv.plano,
+                data: new Date().toISOString(),
+                saldo: acc.saldo
+              });
+              alterado = true;
+            }
+          }
+        }
+        if (alterado) {
+          await saveAccount(activeUserPhone, acc);
+          document.getElementById('sucSaldo').textContent = formatCurrency(acc.saldo);
+          renderHistorico(acc);
+          renderInvestGrid(acc);
+          if (document.getElementById('formAtivos').classList.contains('active')) {
+            renderAtivos(acc);
+          }
+        }
+      }
+    }
+
+    // ===== REGISTAR MOVIMENTO =====
+    async function registrarMovimento(phone, tipo, valor, descricao) {
+      const acc = await getAccount(phone);
+      if (!acc) return;
+      if (!acc.historico) acc.historico = [];
+      acc.historico.push({
+        tipo: tipo,
+        valor: valor,
+        descricao: descricao || '',
+        data: new Date().toISOString(),
+        saldo: acc.saldo
+      });
+      await saveAccount(phone, acc);
+      if (phone === activeUserPhone) {
+        renderHistorico(acc);
+        document.getElementById('sucSaldo').textContent = formatCurrency(acc.saldo);
+      }
+    }
+
+    function enviarComprovativoWhatsApp(numeroDestino, texto) {
+      const link = `https://wa.me/244${numeroDestino}?text=${encodeURIComponent(texto)}`;
+      window.open(link, '_blank');
+    }
+
+    // ===== ATUALIZAR INFORMAÇÕES DE DEPÓSITO =====
+    async function atualizarInfoDeposito() {
+      const container = document.getElementById('depositoInfoContainer');
+      if (!container) return;
+      const config = await getConfig();
+      const info = config.depositoInfo || '';
+      if (info.trim() === '') {
+        container.style.display = 'none';
+        container.innerHTML = '';
+      } else {
+        container.style.display = 'block';
+        container.textContent = info;
+      }
+    }
+
+    // ===== COMUNICADO =====
+    async function carregarComunicado(account) {
+      const config = await getConfig();
+      const comunicado = config.comunicado;
+      const banner = document.getElementById('comunicadoBanner');
+      const textoEl = document.getElementById('comunicadoTexto');
+      const dataEl = document.getElementById('comunicadoData');
+
+      if (comunicado && comunicado.texto && comunicado.texto.trim() !== '') {
+        let apagado = false;
+        if (account && account.comunicadosApagados) {
+          const comunicadoId = comunicado.timestamp;
+          if (account.comunicadosApagados.includes(comunicadoId)) {
+            apagado = true;
+          }
+        }
+        if (!apagado) {
+          banner.style.display = 'block';
+          textoEl.textContent = comunicado.texto;
+          const data = new Date(comunicado.timestamp);
+          dataEl.textContent = 'Publicado em ' + data.toLocaleString('pt-AO');
+          return;
+        }
+      }
+      banner.style.display = 'none';
+      textoEl.textContent = '';
+      dataEl.textContent = '';
+    }
+
+    // ===== PAINEL ADMIN =====
+    async function carregarPainelAdmin() {
+      if (!activeUserIsAdmin) return;
+      const solicitacoes = await getSolicitacoes();
+      const pendentes = solicitacoes.filter(s => s.status === 'pendente');
+      const container = document.getElementById('adminSolicitacoes');
+      container.innerHTML = '';
+      if (pendentes.length === 0) {
+        container.innerHTML = '<div class="historico-vazio">Nenhuma solicitação pendente.</div>';
+      } else {
+        for (const sol of pendentes) {
+          const user = await getAccount(sol.usuario);
+          const nomeUser = user ? user.nome : 'Desconhecido';
+          const div = document.createElement('div');
+          div.className = 'admin-solicitacao';
+          let detalhes = '';
+          if (sol.iban) detalhes += `IBAN: ${sol.iban} `;
+          if (sol.nomeTitular) detalhes += `Titular: ${sol.nomeTitular} `;
+          if (sol.descricao) detalhes += `Desc: ${sol.descricao}`;
+          div.innerHTML = `
+            <div class="info">
+              <strong>${sol.tipo === 'deposito' ? 'Depósito' : 'Saque'}</strong>
+              — ${formatCurrency(sol.valor)} — 
+              <span style="color:var(--text-muted);">${nomeUser} (${formatPhoneDisplay(sol.usuario)})</span>
+              ${detalhes ? `<div class="detalhes">${detalhes}</div>` : ''}
+              <br><span style="font-size:10px;color:var(--text-muted);">${new Date(sol.data).toLocaleString()}</span>
+            </div>
+            <div class="acoes">
+              <button class="aprovar" data-id="${sol.id}">Aprovar</button>
+              <button class="rejeitar" data-id="${sol.id}">Rejeitar</button>
+            </div>
+          `;
+          container.appendChild(div);
+        }
+        container.querySelectorAll('.aprovar').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const id = this.dataset.id;
+            const ok = await aprovarSolicitacao(id);
+            if (ok) {
+              showMsg('msgOp', 'Solicitação aprovada.', 'ok');
+              carregarPainelAdmin();
+              const acc = await getAccount(activeUserPhone);
+              if (acc) {
+                document.getElementById('sucSaldo').textContent = formatCurrency(acc.saldo);
+                renderHistorico(acc);
+                renderInvestGrid(acc);
+                renderAtivos(acc);
+                renderSaquesAprovados();
+              }
+            } else {
+              showMsg('msgOp', 'Erro ao aprovar solicitação.', 'error');
+            }
+          });
+        });
+        container.querySelectorAll('.rejeitar').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const id = this.dataset.id;
+            const ok = await rejeitarSolicitacao(id);
+            if (ok) {
+              showMsg('msgOp', 'Solicitação rejeitada.', 'ok');
+              carregarPainelAdmin();
+            } else {
+              showMsg('msgOp', 'Erro ao rejeitar solicitação.', 'error');
+            }
+          });
+        });
+      }
+
+      const config = await getConfig();
+      document.getElementById('adminDepMinGlobal').value = config.depositoMinGlobal || 0;
+      document.getElementById('adminSaqMinGlobal').value = config.saqueMinGlobal || 0;
+      document.getElementById('adminDepositoInfo').value = config.depositoInfo || '';
+
+      document.getElementById('adminBonusBoasVindas').value = config.bonusBoasVindas || 0;
+      document.getElementById('adminBonusAtual').textContent = 'Atual: ' + formatCurrency(config.bonusBoasVindas || 0);
+
+      const selectUser = document.getElementById('adminSelectUser');
+      selectUser.innerHTML = '';
+      const users = await getAllUsers();
+      for (const u of users) {
+        const opt = document.createElement('option');
+        opt.value = u.telefone;
+        opt.textContent = `${u.nome} (${formatPhoneDisplay(u.telefone)})`;
+        selectUser.appendChild(opt);
+      }
+      if (users.length > 0) {
+        carregarLimitesUser(users[0].telefone);
+      }
+      selectUser.addEventListener('change', function() {
+        carregarLimitesUser(this.value);
+      });
+
+      renderAdminPlanos();
+
+      if (config.comunicado) {
+        document.getElementById('adminComunicado').value = config.comunicado.texto || '';
+      } else {
+        document.getElementById('adminComunicado').value = '';
+      }
+    }
+
+    async function carregarLimitesUser(phone) {
+      const acc = await getAccount(phone);
+      if (!acc) return;
+      const limites = acc.limites || {};
+      document.getElementById('adminDepMinUser').value = limites.depositoMin || '';
+      document.getElementById('adminSaqMinUser').value = limites.saqueMin || '';
+    }
+
+    // ===== ADMIN - PLANOS =====
+    let planoEditandoId = null;
+
+    function renderAdminPlanos() {
+      const container = document.getElementById('adminPlanosContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const listaDiv = document.createElement('div');
+      listaDiv.className = 'admin-planos-lista';
+      if (!planos || planos.length === 0) {
+        listaDiv.innerHTML = '<div class="historico-vazio">Nenhum plano definido.</div>';
+      } else {
+        planos.forEach((p, idx) => {
+          const item = document.createElement('div');
+          item.className = 'admin-plano-item';
+          item.innerHTML = `
+            <div class="info">
+              <span class="label-plano">${p.label}</span>
+              <span>Invest: ${formatCurrency(p.invest)}</span>
+              <span>Dias: ${p.dias}</span>
+              <span>Retorno: ${formatCurrency(p.retorno)}</span>
+            </div>
+            <div class="acoes">
+              <button class="editar" data-idx="${idx}">Editar</button>
+              <button class="remover" data-idx="${idx}">Remover</button>
+            </div>
+          `;
+          listaDiv.appendChild(item);
+        });
+      }
+      container.appendChild(listaDiv);
+
+      const formDiv = document.createElement('div');
+      formDiv.className = 'admin-plano-form';
+      formDiv.innerHTML = `
+        <div class="linha">
+          <div class="campo">
+            <label>Rótulo</label>
+            <input id="planoLabel" type="text" placeholder="Ex: 1000 Kz · 3 dias" />
+          </div>
+          <div class="campo">
+            <label>Investimento (Kz)</label>
+            <input id="planoInvest" type="number" step="any" min="0" placeholder="1000" />
+          </div>
+          <div class="campo">
+            <label>Dias</label>
+            <input id="planoDias" type="number" min="1" placeholder="3" />
+          </div>
+          <div class="campo">
+            <label>Retorno (Kz)</label>
+            <input id="planoRetorno" type="number" step="any" min="0" placeholder="2600" />
+          </div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-plano" id="btnSalvarPlano">Adicionar Plano</button>
+          <button class="btn-plano cancelar" id="btnCancelarEdicao" style="display:none;">Cancelar</button>
+        </div>
+      `;
+      container.appendChild(formDiv);
+
+      const btnSalvar = document.getElementById('btnSalvarPlano');
+      const btnCancelar = document.getElementById('btnCancelarEdicao');
+      const labelInput = document.getElementById('planoLabel');
+      const investInput = document.getElementById('planoInvest');
+      const diasInput = document.getElementById('planoDias');
+      const retornoInput = document.getElementById('planoRetorno');
+
+      function limparForm() {
+        labelInput.value = '';
+        investInput.value = '';
+        diasInput.value = '';
+        retornoInput.value = '';
+        planoEditandoId = null;
+        btnSalvar.textContent = 'Adicionar Plano';
+        btnCancelar.style.display = 'none';
+      }
+
+      function carregarPlanoParaEdicao(idx) {
+        const p = planos[idx];
+        if (!p) return;
+        labelInput.value = p.label;
+        investInput.value = p.invest;
+        diasInput.value = p.dias;
+        retornoInput.value = p.retorno;
+        planoEditandoId = idx;
+        btnSalvar.textContent = 'Atualizar Plano';
+        btnCancelar.style.display = 'inline-block';
+      }
+
+      btnCancelar.addEventListener('click', limparForm);
+
+      btnSalvar.addEventListener('click', async function() {
+        const label = labelInput.value.trim();
+        const invest = parseFloat(investInput.value);
+        const dias = parseInt(diasInput.value);
+        const retorno = parseFloat(retornoInput.value);
+        if (!label || isNaN(invest) || invest <= 0 || isNaN(dias) || dias <= 0 || isNaN(retorno) || retorno <= 0) {
+          showMsg('msgOp', 'Preenche todos os campos com valores válidos.', 'error');
+          return;
+        }
+        const novoPlano = { label, invest, dias, retorno };
+        let lista = [...planos];
+        if (planoEditandoId !== null) {
+          lista[planoEditandoId] = novoPlano;
+        } else {
+          lista.push(novoPlano);
+        }
+        await savePlanos(lista);
+        limparForm();
+        renderAdminPlanos();
+        renderInvestGrid(null);
+        showMsg('msgOp', 'Plano guardado com sucesso.', 'ok');
+      });
+
+      listaDiv.querySelectorAll('.editar').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const idx = parseInt(this.dataset.idx);
+          carregarPlanoParaEdicao(idx);
+        });
+      });
+      listaDiv.querySelectorAll('.remover').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const idx = parseInt(this.dataset.idx);
+          if (!confirm('Remover o plano "' + planos[idx].label + '"? Esta ação não afeta investimentos já iniciados.'))
+            return;
+          const lista = [...planos];
+          lista.splice(idx, 1);
+          await savePlanos(lista);
+          renderAdminPlanos();
+          renderInvestGrid(null);
+          showMsg('msgOp', 'Plano removido.', 'ok');
+        });
+      });
+    }
+
+    // ===== SWITCH TABS =====
+    const tabDep = document.getElementById('tabDep'),
+      tabSaq = document.getElementById('tabSaq'),
+      tabTrans = document.getElementById('tabTrans'),
+      tabInv = document.getElementById('tabInvest'),
+      tabAtivos = document.getElementById('tabAtivos'),
+      tabHist = document.getElementById('tabHistorico'),
+      tabSaquesAprovados = document.getElementById('tabSaquesAprovados'),
+      tabAdmin = document.getElementById('tabAdmin'),
+      tabChat = document.getElementById('tabChat');
+    const formDep = document.getElementById('formDeposito'),
+      formSaq = document.getElementById('formSaque'),
+      formTrans = document.getElementById('formTransferencia'),
+      formInv = document.getElementById('formInvestimento'),
+      formAtivos = document.getElementById('formAtivos'),
+      formHist = document.getElementById('formHistorico'),
+      formSaquesAprovados = document.getElementById('formSaquesAprovados'),
+      formAdmin = document.getElementById('formAdmin'),
+      formChat = document.getElementById('formChat');
+
+    function switchOpTab(op) {
+      [tabDep, tabSaq, tabTrans, tabInv, tabAtivos, tabHist, tabSaquesAprovados, tabAdmin, tabChat].forEach(t => t
+      .classList.remove('active'));
+      [formDep, formSaq, formTrans, formInv, formAtivos, formHist, formSaquesAprovados, formAdmin, formChat].forEach(
+        f => f.classList.remove('active'));
+      if (op === 'dep') { tabDep.classList.add('active');
+        formDep.classList.add('active');
+        atualizarInfoDeposito(); } else if (op === 'saq') {
+        tabSaq.classList.add('active');
+        formSaq.classList.add('active');
+        if (activeUserPhone) {
+          getAccount(activeUserPhone).then(acc => {
+            if (acc) {
+              document.getElementById('nomeSaque').value = acc.nome;
+            }
+          });
+        }
+      } else if (op === 'trans') { tabTrans.classList.add('active');
+        formTrans.classList.add('active'); } else if (op === 'inv') { tabInv.classList.add('active');
+        formInv.classList.add('active');
+        renderInvestGrid(null); } else if (op === 'ativos') { tabAtivos.classList.add('active');
+        formAtivos.classList.add('active');
+        renderAtivos(null); } else if (op === 'hist') { tabHist.classList.add('active');
+        formHist.classList.add('active');
+        renderHistorico(null); } else if (op === 'saquesAprovados') {
+        tabSaquesAprovados.classList.add('active');
+        formSaquesAprovados.classList.add('active');
+        renderSaquesAprovados();
+      } else if (op === 'admin') { tabAdmin.classList.add('active');
+        formAdmin.classList.add('active');
+        carregarPainelAdmin(); } else if (op === 'chat') { tabChat.classList.add('active');
+        formChat.classList.add('active');
+        renderChatContatos();
+        renderChatMensagens();
+        if (chatContatoAtual) {
+          marcarComoLidas(chatContatoAtual);
+          atualizarBadgeChat();
+        }
+      }
+      clearMsg('msgOp');
+    }
+
+    tabDep.addEventListener('click', () => switchOpTab('dep'));
+    tabSaq.addEventListener('click', () => switchOpTab('saq'));
+    tabTrans.addEventListener('click', () => switchOpTab('trans'));
+    tabInv.addEventListener('click', () => switchOpTab('inv'));
+    tabAtivos.addEventListener('click', () => switchOpTab('ativos'));
+    tabHist.addEventListener('click', () => switchOpTab('hist'));
+    tabSaquesAprovados.addEventListener('click', () => switchOpTab('saquesAprovados'));
+    if (tabAdmin) tabAdmin.addEventListener('click', () => switchOpTab('admin'));
+    tabChat.addEventListener('click', () => switchOpTab('chat'));
+
+    // ===== EVENTOS DOS FORMULÁRIOS =====
+
+    // Registo
+    document.getElementById('formRegistar').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsg('msgRegistar');
+      const nome = document.getElementById('nome').value.trim();
+      const telefone = document.getElementById('telefone').value;
+      const senha = document.getElementById('senha').value;
+      const senha2 = document.getElementById('senha2').value;
+      const okNome = nome.length >= 3;
+      const okTelefone = isValidPhone(telefone);
+      const okSenha = senha.length >= 6;
+      const okSenha2 = senha2 === senha && senha2.length > 0;
+      setError('f-nome', !okNome);
+      setError('f-telefone', !okTelefone);
+      setError('f-senha', !okSenha);
+      setError('f-senha2', !okSenha2);
+      if (!(okNome && okTelefone && okSenha && okSenha2)) return;
+      const btn = document.getElementById('btnRegistar');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin"></span>A criar conta…';
+      try {
+        const phoneDigits = digitsOnly(telefone);
+        if (await getAccount(phoneDigits)) { showMsg('msgRegistar', 'Já existe uma conta com este número.', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Criar conta'; return; }
+
+        const config = await getConfig();
+        const bonus = config.bonusBoasVindas || 0;
+
+        const accData = {
+          nome,
+          telefone: phoneDigits,
+          passwordHash: hash(senha),
+          saldo: 0,
+          investimentos: [],
+          historico: [],
+          comunicadosApagados: [],
+          criadoEm: new Date().toISOString()
+        };
+
+        if (bonus > 0) {
+          accData.saldo = bonus;
+          accData.historico.push({
+            tipo: 'bónus de boas-vindas',
+            valor: bonus,
+            descricao: 'Bónus de boas-vindas creditado automaticamente',
+            data: new Date().toISOString(),
+            saldo: bonus
+          });
+        }
+
+        await saveAccount(phoneDigits, accData);
+        activeUserPhone = phoneDigits;
+        activeUserIsAdmin = false;
+
+        let msgBonus = '';
+        if (bonus > 0) {
+          msgBonus = ` 🎁 Recebeste um bónus de boas-vindas de ${formatCurrency(bonus)}!`;
+        }
+        showSuccess(accData, 'Conta criada!', 'A tua conta foi guardada com sucesso.' + msgBonus);
+        document.getElementById('formRegistar').reset();
+      } catch (err) { showMsg('msgRegistar', 'Erro ao guardar conta.', 'error'); } finally { btn.disabled = false;
+        btn.textContent = 'Criar conta'; }
+    });
+
+    // Entrar
+    document.getElementById('formEntrar').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsg('msgEntrar');
+      const telefone = document.getElementById('telefoneLogin').value;
+      const senha = document.getElementById('senhaLogin').value;
+      const okTelefone = isValidPhone(telefone);
+      const okSenha = senha.length > 0;
+      setError('f-telefoneLogin', !okTelefone);
+      setError('f-senhaLogin', !okSenha);
+      if (!(okTelefone && okSenha)) return;
+      const btn = document.getElementById('btnEntrar');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin"></span>A entrar…';
+      try {
+        const phoneDigits = digitsOnly(telefone);
+        const account = await getAccount(phoneDigits);
+        if (!account) {
+          showMsg('msgEntrar', 'Conta não encontrada. Verifica o número ou regista-te.', 'error');
+          return;
+        }
+        if (account.passwordHash !== hash(senha)) {
+          showMsg('msgEntrar', 'Senha incorreta. Tenta novamente.', 'error');
+          return;
+        }
+        activeUserPhone = phoneDigits;
+        activeUserIsAdmin = !!account.isAdmin;
+        showSuccess(account, 'Bem-vindo(a) de volta!', 'Entraste com sucesso.');
+        document.getElementById('formEntrar').reset();
+      } catch (err) {
+        showMsg('msgEntrar', 'Erro ao entrar: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+      }
+    });
+
+    // ===== SHOW SUCCESS =====
+    function showSuccess(account, title, text) {
+      document.getElementById('authArea').style.display = 'none';
+      document.getElementById('successArea').classList.add('active');
+      document.getElementById('successTitle').textContent = title;
+      document.getElementById('successText').textContent = text;
+      document.getElementById('sucNome').textContent = account.nome;
+      document.getElementById('sucTelefone').textContent = '+244 ' + formatPhoneDisplay(account.telefone);
+      document.getElementById('sucSaldo').textContent = formatCurrency(account.saldo);
+
+      const nomeSaque = document.getElementById('nomeSaque');
+      if (nomeSaque) nomeSaque.value = account.nome;
+
+      const tabAdmin = document.getElementById('tabAdmin');
+      if (activeUserIsAdmin) {
+        tabAdmin.style.display = 'block';
+        carregarPainelAdmin();
+      } else {
+        tabAdmin.style.display = 'none';
+      }
+
+      chatContatoAtual = activeUserIsAdmin ? null : ADMIN_PHONE;
+      renderInvestGrid(account);
+      renderHistorico(account);
+      renderAtivos(account);
+      renderSaquesAprovados();
+      switchOpTab('dep');
+      iniciarProcessamentoAtivos();
+      iniciarPollingChat();
+      renderChatContatos();
+      renderChatMensagens();
+      atualizarBadgeChat();
+      atualizarInfoDeposito();
+      carregarComunicado(account);
+      iniciarListeners();
+    }
+
+    // ===== LISTENERS EM TEMPO REAL =====
+    function iniciarListeners() {
+      // Listener para mensagens
+      if (mensagensListener) mensagensListener.off();
+      mensagensListener = database.ref(DB_MENSAGENS);
+      mensagensListener.on('value', async () => {
+        if (activeUserPhone) {
+          await atualizarBadgeChat();
+          const formChat = document.getElementById('formChat');
+          if (formChat && formChat.classList.contains('active')) {
+            await renderChatMensagens();
+            await renderChatContatos();
+          }
+        }
+      });
+
+      // Listener para solicitações (admin)
+      if (activeUserIsAdmin) {
+        if (solicitacoesListener) solicitacoesListener.off();
+        solicitacoesListener = database.ref(DB_SOLICITACOES);
+        solicitacoesListener.on('value', () => {
+          if (activeUserIsAdmin && document.getElementById('formAdmin').classList.contains('active')) {
+            carregarPainelAdmin();
+          }
+        });
+      }
+
+      // Listener para saques aprovados
+      if (saquesAprovadosListener) saquesAprovadosListener.off();
+      saquesAprovadosListener = database.ref(DB_SAQUES_APROVADOS);
+      saquesAprovadosListener.on('value', () => {
+        if (document.getElementById('formSaquesAprovados').classList.contains('active')) {
+          renderSaquesAprovados();
+        }
+      });
+
+      // Listener para configurações
+      if (configListener) configListener.off();
+      configListener = database.ref(DB_CONFIG);
+      configListener.on('value', async () => {
+        if (activeUserPhone) {
+          const acc = await getAccount(activeUserPhone);
+          if (acc) carregarComunicado(acc);
+          await atualizarInfoDeposito();
+        }
+        if (activeUserIsAdmin && document.getElementById('formAdmin').classList.contains('active')) {
+          carregarPainelAdmin();
+        }
+      });
+
+      // Listener para conta do utilizador
+      if (accountsListener) accountsListener.off();
+      if (activeUserPhone) {
+        accountsListener = database.ref(`${DB_ACCOUNTS}/${activeUserPhone}`);
+        accountsListener.on('value', (snapshot) => {
+          const acc = snapshot.val();
+          if (acc) {
+            document.getElementById('sucSaldo').textContent = formatCurrency(acc.saldo);
+            renderInvestGrid(acc);
+            renderAtivos(acc);
+            renderHistorico(acc);
+          }
+        });
+      }
+    }
+
+    // ===== DEPÓSITO =====
+    formDep.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsg('msgOp');
+      const val = parseFloat(document.getElementById('valDeposito').value);
+      if (isNaN(val) || val <= 0) { showMsg('msgOp', 'Insere um valor válido.', 'error'); return; }
+
+      const acc = await getAccount(activeUserPhone);
+      if (!acc) { showMsg('msgOp', 'Erro: conta não encontrada.', 'error'); return; }
+
+      const config = await getConfig();
+      const limiteGlobal = config.depositoMinGlobal || 0;
+      const limiteUser = (acc.limites && acc.limites.depositoMin) ? acc.limites.depositoMin : 0;
+      const limite = Math.max(limiteGlobal, limiteUser);
+      if (val < limite) {
+        showMsg('msgOp', `Valor mínimo para depósito é ${formatCurrency(limite)}.`, 'error');
+        return;
+      }
+
+      let estado = '';
+      let solId = null;
+
+      if (activeUserIsAdmin) {
+        acc.saldo = (acc.saldo || 0) + val;
+        await saveAccount(activeUserPhone, acc);
+        await registrarMovimento(activeUserPhone, 'depósito', val, 'Depósito efetuado (admin)');
+        document.getElementById('sucSaldo').textContent = formatCurrency(acc.saldo);
+        showMsg('msgOp', 'Depósito de ' + formatCurrency(val) + ' realizado!', 'ok');
+        formDep.reset();
+        renderInvestGrid(acc);
+        renderHistorico(acc);
+        renderAtivos(acc);
+        estado = 'Depósito realizado pelo administrador';
+      } else {
+        const sol = await criarSolicitacao(activeUserPhone, 'deposito', val);
+        solId = sol.id;
+        showMsg('msgOp', 'Solicitação de depósito enviada. Aguarda aprovação do administrador.', 'ok');
+        formDep.reset();
+        estado = 'Solicitação de depósito pendente de aprovação';
+        if (activeUserIsAdmin && document.getElementById('formAdmin').classList.contains('active')) {
+          carregarPainelAdmin();
+        }
+      }
+
+      const nome = acc.nome || 'Utilizador';
+      const telefone = acc.telefone || activeUserPhone;
+      const dataHora = new Date().toLocaleString('pt-AO');
+      const valorFormat = formatCurrency(val);
+
+      let textoComprovativo = `
+      *Comprovativo de Depósito - Banco Digital Independente*
+      -----------------------------------
+      Nome: ${nome}
+      Telefone: +244 ${formatPhoneDisplay(telefone)}
+      Valor: ${valorFormat}
+      Data/Hora: ${dataHora}
+      Estado: ${estado}
+      ${solId ? `ID da solicitação: ${solId}` : ''}
+      -----------------------------------
+      Obrigado pela confiança!
+      `.trim();
+
+      enviarComprovativoWhatsApp('936188265', textoComprovativo);
+    });
+
+    // ===== SAQUE =====
+    formSaq.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsg('msgOp');
+
+      const val = parseFloat(document.getElementById('valSaque').value);
+      const iban = document.getElementById('ibanSaque').value.trim();
+      const descricao = document.getElementById('descricaoSaque').value.trim();
+
+      if (isNaN(val) || val <= 0) { showMsg('msgOp', 'Valor inválido.', 'error'); return; }
+      if (!iban) { showMsg('msgOp', 'Por favor, insere o IBAN para o levantamento.', 'error'); return; }
+
+      const acc = await getAccount(activeUserPhone);
+      if (!acc) { showMsg('msgOp', 'Conta não encontrada.', 'error'); return; }
+      if (acc.saldo < val) { showMsg('msgOp', 'Saldo insuficiente.', 'error'); return; }
+
+      const config = await getConfig();
+      const limiteGlobal = config.saqueMinGlobal || 0;
+      const limiteUser = (acc.limites && acc.limites.saqueMin) ? acc.limites.saqueMin : 0;
+      const limite = Math.max(limiteGlobal, limiteUser);
+      if (val < limite) {
+        showMsg('msgOp', `Valor mínimo para saque é ${formatCurrency(limite)}.`, 'error');
+        return;
+      }
+
+      const nomeTitular = acc.nome;
+
+      if (activeUserIsAdmin) {
+        acc.saldo -= val;
+        await saveAccount(activeUserPhone, acc);
+        let desc = 'Levantamento efetuado (admin)';
+        if (iban) desc += ' | IBAN: ' + iban;
+        if (descricao) desc += ' | Desc: ' + descricao;
+        await registrarMovimento(activeUserPhone, 'saque', val, desc);
+        await adicionarSaqueAprovado(activeUserPhone, val, iban, nomeTitular, descricao, new Date().toISOString());
+        document.getElementById('sucSaldo').textContent = formatCurrency(acc.saldo);
+        showMsg('msgOp', 'Levantamento de ' + formatCurrency(val) + ' realizado!', 'ok');
+        formSaq.reset();
+        renderInvestGrid(acc);
+        renderHistorico(acc);
+        renderAtivos(acc);
+        renderSaquesAprovados();
+        const dataHora = new Date().toLocaleString('pt-AO');
+        const valorFormat = formatCurrency(val);
+        const textoComprovativo = `
+        *Comprovativo de Levantamento - Banco Digital Independente*
+        -----------------------------------
+        Nome: ${acc.nome}
+        Telefone: +244 ${formatPhoneDisplay(acc.telefone)}
+        IBAN: ${iban}
+        Valor: ${valorFormat}
+        Data/Hora: ${dataHora}
+        Descrição: ${descricao || 'N/A'}
+        Estado: Aprovado (Admin)
+        -----------------------------------
+        Obrigado pela confiança!
+        `.trim();
+        enviarComprovativoWhatsApp('936188265', textoComprovativo);
+      } else {
+        const sol = await criarSolicitacao(activeUserPhone, 'saque', val, {
+          iban: iban,
+          nomeTitular: nomeTitular,
+          descricao: descricao
+        });
+        showMsg('msgOp', 'Solicitação de saque enviada. Aguarda aprovação do administrador.', 'ok');
+        formSaq.reset();
+        const dataHora = new Date().toLocaleString('pt-AO');
+        const valorFormat = formatCurrency(val);
+        const textoComprovativo = `
+        *Comprovativo de Solicitação de Levantamento - Banco Digital Independente*
+        -----------------------------------
+        Nome: ${acc.nome}
+        Telefone: +244 ${formatPhoneDisplay(acc.telefone)}
+        IBAN: ${iban}
+        Valor: ${valorFormat}
+        Data/Hora: ${dataHora}
+        Descrição: ${descricao || 'N/A'}
+        Estado: Pendente de aprovação
+        ID: ${sol.id}
+        -----------------------------------
+        Aguarde a validação do administrador.
+        `.trim();
+        enviarComprovativoWhatsApp('936188265', textoComprovativo);
+        if (activeUserIsAdmin && document.getElementById('formAdmin').classList.contains('active')) {
+          carregarPainelAdmin();
+        }
+      }
+    });
+
+    // ===== TRANSFERÊNCIA =====
+    formTrans.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsg('msgOp');
+      const telDest = digitsOnly(document.getElementById('telDestino').value);
+      const val = parseFloat(document.getElementById('valTransferencia').value);
+      if (!isValidPhone(telDest)) { showMsg('msgOp', 'Número inválido.', 'error'); return; }
+      if (telDest === activeUserPhone) { showMsg('msgOp', 'Não podes transferir para ti.', 'error'); return; }
+      if (isNaN(val) || val <= 0) { showMsg('msgOp', 'Valor inválido.', 'error'); return; }
+      const accRem = await getAccount(activeUserPhone);
+      if (!accRem) { showMsg('msgOp', 'Conta remetente não encontrada.', 'error'); return; }
+      if (accRem.saldo < val) { showMsg('msgOp', 'Saldo insuficiente.', 'error'); return; }
+      const accDest = await getAccount(telDest);
+      if (!accDest) { showMsg('msgOp', 'Destinatário não encontrado.', 'error'); return; }
+      accRem.saldo -= val;
+      accDest.saldo = (accDest.saldo || 0) + val;
+      await saveAccount(activeUserPhone, accRem);
+      await saveAccount(telDest, accDest);
+      await registrarMovimento(activeUserPhone, 'transferência enviada', val, 'Para ' + accDest.nome);
+      const accDestAtualizado = await getAccount(telDest);
+      if (accDestAtualizado) {
+        await registrarMovimento(telDest, 'transferência recebida', val, 'De ' + accRem.nome);
+      }
+      document.getElementById('sucSaldo').textContent = formatCurrency(accRem.saldo);
+      showMsg('msgOp', 'Transferência de ' + formatCurrency(val) + ' para ' + accDest.nome + ' concluída.', 'ok');
+      formTrans.reset();
+      renderInvestGrid(accRem);
+      renderHistorico(accRem);
+      renderAtivos(accRem);
+    });
+
+    // ===== CHAT =====
+    document.getElementById('chatEnviar').addEventListener('click', async function() {
+      const input = document.getElementById('chatInput');
+      const texto = input.value.trim();
+      if (!texto || !chatContatoAtual) return;
+      const ok = await enviarMensagem(activeUserPhone, chatContatoAtual, texto);
+      if (ok) {
+        input.value = '';
+        await renderChatMensagens();
+        await renderChatContatos();
+        await atualizarBadgeChat();
+      } else {
+        showMsg('msgOp', 'Erro ao enviar mensagem.', 'error');
+      }
+    });
+
+    document.getElementById('chatInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('chatEnviar').click();
+      }
+    });
+
+    // ===== APAGAR COMUNICADO =====
+    document.getElementById('btnApagarComunicado').addEventListener('click', async function() {
+      if (!activeUserPhone) return;
+      if (!confirm('Apagar este comunicado apenas para si?')) return;
+      const config = await getConfig();
+      const comunicadoId = config.comunicado ? config.comunicado.timestamp : null;
+      if (!comunicadoId) return;
+      const acc = await getAccount(activeUserPhone);
+      if (!acc) return;
+      if (!acc.comunicadosApagados) acc.comunicadosApagados = [];
+      acc.comunicadosApagados.push(comunicadoId);
+      await saveAccount(activeUserPhone, acc);
+      document.getElementById('comunicadoBanner').style.display = 'none';
+      showMsg('msgOp', 'Comunicado apagado para si.', 'ok');
+    });
+
+    // ===== ADMIN - LIMPAR HISTÓRICO =====
+    document.getElementById('btnLimparHistorico').addEventListener('click', async function() {
+      if (!activeUserPhone) return;
+      if (!confirm('Tens a certeza que queres apagar todo o teu histórico de movimentos?')) return;
+      const acc = await getAccount(activeUserPhone);
+      if (!acc) return;
+      acc.historico = [];
+      await saveAccount(activeUserPhone, acc);
+      renderHistorico(acc);
+      showMsg('msgOp', 'Histórico limpo com sucesso.', 'ok');
+    });
+
+    // ===== ADMIN - LIMITES GLOBAIS =====
+    document.getElementById('btnSalvarLimitesGlobais').addEventListener('click', async function() {
+      const dep = parseFloat(document.getElementById('adminDepMinGlobal').value) || 0;
+      const saq = parseFloat(document.getElementById('adminSaqMinGlobal').value) || 0;
+      const config = await getConfig();
+      config.depositoMinGlobal = dep;
+      config.saqueMinGlobal = saq;
+      await saveConfig(config);
+      showMsg('msgOp', 'Limites globais atualizados.', 'ok');
+    });
+
+    // ===== ADMIN - LIMITES POR UTILIZADOR =====
+    document.getElementById('btnSalvarLimitesUser').addEventListener('click', async function() {
+      const phone = document.getElementById('adminSelectUser').value;
+      if (!phone) { showMsg('msgOp', 'Seleciona um utilizador.', 'error'); return; }
+      const dep = parseFloat(document.getElementById('adminDepMinUser').value) || 0;
+      const saq = parseFloat(document.getElementById('adminSaqMinUser').value) || 0;
+      const acc = await getAccount(phone);
+      if (!acc) { showMsg('msgOp', 'Utilizador não encontrado.', 'error'); return; }
+      if (!acc.limites) acc.limites = {};
+      acc.limites.depositoMin = dep;
+      acc.limites.saqueMin = saq;
+      await saveAccount(phone, acc);
+      showMsg('msgOp', 'Limites do utilizador atualizados.', 'ok');
+    });
+
+    // ===== ADMIN - INFORMAÇÕES DE DEPÓSITO =====
+    document.getElementById('btnSalvarInfoDeposito').addEventListener('click', async function() {
+      const texto = document.getElementById('adminDepositoInfo').value;
+      const config = await getConfig();
+      config.depositoInfo = texto;
+      await saveConfig(config);
+      showMsg('msgOp', 'Informações de depósito atualizadas.', 'ok');
+      if (document.getElementById('formDeposito').classList.contains('active')) {
+        await atualizarInfoDeposito();
+      }
+    });
+
+    // ===== ADMIN - BÓNUS =====
+    document.getElementById('btnSalvarBonus').addEventListener('click', async function() {
+      const val = parseFloat(document.getElementById('adminBonusBoasVindas').value);
+      if (isNaN(val) || val < 0) {
+        showMsg('msgOp', 'Insere um valor válido (0 ou superior).', 'error');
+        return;
+      }
+      const config = await getConfig();
+      config.bonusBoasVindas = val;
+      await saveConfig(config);
+      document.getElementById('adminBonusAtual').textContent = 'Atual: ' + formatCurrency(val);
+      showMsg('msgOp', 'Bónus de boas-vindas atualizado para ' + formatCurrency(val), 'ok');
+    });
+
+    // ===== ADMIN - ENVIAR COMUNICADO =====
+    document.getElementById('btnEnviarComunicado').addEventListener('click', async function() {
+      const texto = document.getElementById('adminComunicado').value;
+      if (!texto || texto.trim() === '') {
+        showMsg('msgOp', 'Escreve um comunicado antes de enviar.', 'error');
+        return;
+      }
+
+      const btn = this;
+      btn.disabled = true;
+      btn.textContent = 'A enviar...';
+
+      try {
+        const config = await getConfig();
+        config.comunicado = {
+          texto: texto.trim(),
+          timestamp: new Date().toISOString()
+        };
+        await saveConfig(config);
+
+        const users = await getAllUsers();
+        let count = 0;
+        for (const user of users) {
+          if (user.telefone !== ADMIN_PHONE) {
+            const ok = await enviarMensagem(ADMIN_PHONE, user.telefone, texto.trim());
+            if (ok) count++;
+          }
+        }
+
+        for (const user of users) {
+          if (user.comunicadosApagados) {
+            user.comunicadosApagados = user.comunicadosApagados.filter(id => id !== config.comunicado.timestamp);
+            await saveAccount(user.telefone, user);
+          }
+        }
+
+        const acc = await getAccount(activeUserPhone);
+        await carregarComunicado(acc);
+        showMsg('msgOp', `Comunicado enviado para ${count} utilizadores via chat e publicado no dashboard.`, 'ok');
+        carregarPainelAdmin();
+      } catch (error) {
+        showMsg('msgOp', 'Erro ao enviar comunicado.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enviar Comunicado';
+      }
+    });
+
+    // ===== LOGOUT =====
+    document.getElementById('btnLogout').addEventListener('click', function() {
+      pararProcessamentoAtivos();
+      pararPollingChat();
+      removerListeners();
+      activeUserPhone = null;
+      activeUserIsAdmin = false;
+      chatContatoAtual = null;
+      document.getElementById('successArea').classList.remove('active');
+      document.getElementById('authArea').style.display = 'block';
+      switchAuth('registar');
+      clearMsg('msgRegistar');
+      clearMsg('msgEntrar');
+      clearMsg('msgOp');
+      document.getElementById('investGrid').innerHTML = '';
+      document.getElementById('ativosContainer').innerHTML =
+      '<div class="historico-vazio">Nenhum investimento ativo.</div>';
+      document.getElementById('historicoContainer').innerHTML =
+      '<div class="historico-vazio">Nenhum movimento registado.</div>';
+      document.getElementById('saquesAprovadosContainer').innerHTML =
+      '<div class="historico-vazio">Nenhum saque aprovado até agora.</div>';
+      document.getElementById('tabAdmin').style.display = 'none';
+      document.getElementById('chatBadge').style.display = 'none';
+      document.getElementById('chatMensagens').innerHTML = '<div class="chat-vazio">Seleciona um contacto para conversar.</div>';
+      document.getElementById('chatContatos').innerHTML = '';
+      document.getElementById('chatInput').disabled = true;
+      document.getElementById('chatEnviar').disabled = true;
+      document.getElementById('depositoInfoContainer').style.display = 'none';
+      document.getElementById('depositoInfoContainer').innerHTML = '';
+      document.getElementById('comunicadoBanner').style.display = 'none';
+      document.getElementById('comunicadoTexto').textContent = '';
+      document.getElementById('comunicadoData').textContent = '';
+    });
+
+    // ===== REMOVER LISTENERS =====
+    function removerListeners() {
+      if (authListener) { authListener.off();
+        authListener = null; }
+      if (configListener) { configListener.off();
+        configListener = null; }
+      if (solicitacoesListener) { solicitacoesListener.off();
+        solicitacoesListener = null; }
+      if (mensagensListener) { mensagensListener.off();
+        mensagensListener = null; }
+      if (saquesAprovadosListener) { saquesAprovadosListener.off();
+        saquesAprovadosListener = null; }
+      if (accountsListener) { accountsListener.off();
+        accountsListener = null; }
+    }
+
+    // ===== POLLING =====
+    function iniciarPollingChat() {
+      if (chatPollInterval) clearInterval(chatPollInterval);
+      chatPollInterval = setInterval(async () => {
+        if (activeUserPhone) {
+          await atualizarBadgeChat();
+        }
+      }, 5000);
+    }
+
+    function pararPollingChat() {
+      if (chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+      }
+    }
+
+    function iniciarProcessamentoAtivos() {
+      if (processInterval) clearInterval(processInterval);
+      processInterval = setInterval(() => {
+        processarInvestimentos();
+      }, 2000);
+      processarInvestimentos();
+    }
+
+    function pararProcessamentoAtivos() {
+      if (processInterval) {
+        clearInterval(processInterval);
+        processInterval = null;
+      }
+    }
+
+    // ===== INICIALIZAÇÃO =====
+    (async function init() {
+      await criarAdminSeNaoExistir();
+      planos = await getPlanos();
+    })();
+  </script>
+</body>
+</html>
