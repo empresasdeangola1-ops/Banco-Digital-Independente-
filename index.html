@@ -1650,14 +1650,14 @@
             <button class="submit" id="btnSalvarLimitesUser" style="margin-top:6px;">Salvar limites do utilizador</button>
           </div>
 
-          <!-- NOVO BLOCO: Limite de Transferência -->
+          <!-- NOVO BLOCO: Limite de Transferência com valor pré-definido 15000 Kz -->
           <div class="admin-limite-transferencia">
             <div style="font-weight:600;font-size:13px;margin-bottom:4px;">🔁 Limite de Transferência entre Utilizadores</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Define um valor máximo que cada utilizador pode transferir por transação.</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Define um valor máximo que cada utilizador pode transferir por transação. <strong>Valor padrão: 15.000 Kz</strong></div>
             <div class="campo">
               <label>Limite Global de Transferência (Kz)</label>
-              <input id="adminTransferenciaLimitGlobal" type="number" step="any" min="0" placeholder="Ex: 50000" />
-              <span class="atual" id="adminTransferenciaLimitAtual">Atual: 0,00 Kz</span>
+              <input id="adminTransferenciaLimitGlobal" type="number" step="any" min="0" placeholder="15000" />
+              <span class="atual" id="adminTransferenciaLimitAtual">Atual: 15.000,00 Kz</span>
             </div>
             <div class="campo">
               <label>Limite por Utilizador (Kz) — sobrescreve o global</label>
@@ -1907,7 +1907,7 @@
       }
     }
 
-    // Configurações
+    // Configurações - com valor padrão de 15000 para transferência
     async function getConfig() {
       try {
         const snapshot = await database.ref(DB_CONFIG).once('value');
@@ -1918,11 +1918,11 @@
           depositoInfo: '', 
           comunicado: null, 
           bonusBoasVindas: 0,
-          transferenciaLimitGlobal: 0
+          transferenciaLimitGlobal: 15000  // valor pré-definido
         };
       } catch (error) {
         console.error('Erro ao buscar configurações:', error);
-        return { depositoMinGlobal: 0, saqueMinGlobal: 0, depositoInfo: '', comunicado: null, bonusBoasVindas: 0, transferenciaLimitGlobal: 0 };
+        return { depositoMinGlobal: 0, saqueMinGlobal: 0, depositoInfo: '', comunicado: null, bonusBoasVindas: 0, transferenciaLimitGlobal: 15000 };
       }
     }
 
@@ -2762,9 +2762,10 @@
       document.getElementById('adminBonusBoasVindas').value = config.bonusBoasVindas || 0;
       document.getElementById('adminBonusAtual').textContent = 'Atual: ' + formatCurrency(config.bonusBoasVindas || 0);
 
-      // Limite de Transferência Global
-      document.getElementById('adminTransferenciaLimitGlobal').value = config.transferenciaLimitGlobal || 0;
-      document.getElementById('adminTransferenciaLimitAtual').textContent = 'Atual: ' + formatCurrency(config.transferenciaLimitGlobal || 0);
+      // Limite de Transferência Global (com valor padrão 15000)
+      const limiteGlobal = config.transferenciaLimitGlobal !== undefined ? config.transferenciaLimitGlobal : 15000;
+      document.getElementById('adminTransferenciaLimitGlobal').value = limiteGlobal;
+      document.getElementById('adminTransferenciaLimitAtual').textContent = 'Atual: ' + formatCurrency(limiteGlobal);
 
       // Selects de utilizadores
       const selectUser = document.getElementById('adminSelectUser');
@@ -3389,7 +3390,7 @@
       }
     });
 
-    // ===== TRANSFERÊNCIA (com limite) =====
+    // ===== TRANSFERÊNCIA (com limite pré-definido 15000) =====
     formTrans.addEventListener('submit', async function(e) {
       e.preventDefault();
       clearMsg('msgOp');
@@ -3408,9 +3409,9 @@
       const accDest = await getAccount(telDest);
       if (!accDest) { showMsg('msgOp', 'Destinatário não encontrado.', 'error'); return; }
       
-      // VERIFICAÇÃO DO LIMITE DE TRANSFERÊNCIA
+      // VERIFICAÇÃO DO LIMITE DE TRANSFERÊNCIA (valor padrão 15000)
       const config = await getConfig();
-      const limiteGlobal = config.transferenciaLimitGlobal || 0;
+      const limiteGlobal = config.transferenciaLimitGlobal !== undefined ? config.transferenciaLimitGlobal : 15000;
       const limiteUser = (accRem.limites && accRem.limites.transferenciaLimit) ? accRem.limites.transferenciaLimit : 0;
       const limite = Math.max(limiteGlobal, limiteUser);
       
@@ -3516,13 +3517,16 @@
       showMsg('msgOp', 'Limites do utilizador atualizados.', 'ok');
     });
 
-    // ===== ADMIN - LIMITE DE TRANSFERÊNCIA =====
+    // ===== ADMIN - LIMITE DE TRANSFERÊNCIA (com valor padrão 15000) =====
     document.getElementById('btnSalvarLimiteTransferencia').addEventListener('click', async function() {
-      const globalVal = parseFloat(document.getElementById('adminTransferenciaLimitGlobal').value) || 0;
+      const globalVal = parseFloat(document.getElementById('adminTransferenciaLimitGlobal').value);
       const userPhone = document.getElementById('adminSelectTransferUser').value;
       const userVal = parseFloat(document.getElementById('adminTransferenciaLimitUser').value) || 0;
       
-      if (globalVal < 0) {
+      // Se o campo estiver vazio, usamos 15000 como padrão
+      const finalGlobal = isNaN(globalVal) ? 15000 : globalVal;
+      
+      if (finalGlobal < 0) {
         showMsg('msgOp', 'O limite global não pode ser negativo.', 'error');
         return;
       }
@@ -3532,9 +3536,9 @@
       }
       
       const config = await getConfig();
-      config.transferenciaLimitGlobal = globalVal;
+      config.transferenciaLimitGlobal = finalGlobal;
       await saveConfig(config);
-      document.getElementById('adminTransferenciaLimitAtual').textContent = 'Atual: ' + formatCurrency(globalVal);
+      document.getElementById('adminTransferenciaLimitAtual').textContent = 'Atual: ' + formatCurrency(finalGlobal);
       
       if (userPhone) {
         const acc = await getAccount(userPhone);
