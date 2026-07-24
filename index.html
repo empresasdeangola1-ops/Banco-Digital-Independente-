@@ -1103,7 +1103,8 @@
       color: var(--primary);
       font-weight: 500;
     }
-    /* Estilos para limite de transferência */
+
+    /* ------ NOVO: Estilos para limite de transferência ------ */
     .admin-limite-transferencia {
       margin-top: 10px;
       border-top: 1px solid var(--border);
@@ -1113,25 +1114,27 @@
       display: flex;
       flex-direction: column;
       gap: 3px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .admin-limite-transferencia .campo label {
       font-size: 12px;
       color: var(--text-secondary);
       font-weight: 500;
     }
-    .admin-limite-transferencia .campo input {
+    .admin-limite-transferencia .campo input,
+    .admin-limite-transferencia .campo select {
       background: #fff;
       border: 1.5px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 8px 12px;
       color: var(--text-primary);
       font-size: 13px;
-      width: 100%;
-      max-width: 200px;
+      font-family: var(--font);
       transition: var(--transition);
+      max-width: 220px;
     }
-    .admin-limite-transferencia .campo input:focus {
+    .admin-limite-transferencia .campo input:focus,
+    .admin-limite-transferencia .campo select:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
       outline: none;
@@ -1140,9 +1143,23 @@
       font-size: 12px;
       color: var(--primary);
       font-weight: 500;
-      display: block;
       margin-top: 2px;
     }
+    .admin-limite-transferencia .linha-user {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .admin-limite-transferencia .linha-user select {
+      flex: 1;
+      min-width: 150px;
+    }
+    .admin-limite-transferencia .linha-user input {
+      flex: 1;
+      min-width: 120px;
+    }
+
     #chatContainer {
       display: flex;
       flex-direction: column;
@@ -1632,7 +1649,8 @@
             </div>
             <button class="submit" id="btnSalvarLimitesUser" style="margin-top:6px;">Salvar limites do utilizador</button>
           </div>
-          <!-- NOVO: Limite de Transferência -->
+
+          <!-- NOVO BLOCO: Limite de Transferência -->
           <div class="admin-limite-transferencia">
             <div style="font-weight:600;font-size:13px;margin-bottom:4px;">🔁 Limite de Transferência entre Utilizadores</div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Define um valor máximo que cada utilizador pode transferir por transação.</div>
@@ -1641,16 +1659,17 @@
               <input id="adminTransferenciaLimitGlobal" type="number" step="any" min="0" placeholder="Ex: 50000" />
               <span class="atual" id="adminTransferenciaLimitAtual">Atual: 0,00 Kz</span>
             </div>
-            <div class="campo" style="margin-top:6px;">
+            <div class="campo">
               <label>Limite por Utilizador (Kz) — sobrescreve o global</label>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <select id="adminSelectTransferUser" style="flex:1;min-width:150px;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text-primary);font-size:13px;font-family:var(--font);transition:var(--transition);"></select>
-                <input id="adminTransferenciaLimitUser" type="number" step="any" min="0" placeholder="Ex: 30000" style="flex:1;min-width:100px;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text-primary);font-size:13px;font-family:var(--font);transition:var(--transition);" />
+              <div class="linha-user">
+                <select id="adminSelectTransferUser"></select>
+                <input id="adminTransferenciaLimitUser" type="number" step="any" min="0" placeholder="Ex: 30000" />
               </div>
               <span class="atual" id="adminTransferenciaLimitUserAtual">Atual: não definido</span>
             </div>
             <button class="submit" id="btnSalvarLimiteTransferencia" style="margin-top:6px;">Salvar limites de transferência</button>
           </div>
+
           <div class="admin-info-deposito">
             <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📝 Informações adicionais para depósito</div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Este texto será exibido a todos os utilizadores na tela de depósito.</div>
@@ -1715,11 +1734,10 @@
       appId: "1:350764605895:web:ffd6145d768d582594b9e2"
     };
 
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // ===== REFERÊNCIAS DO BANCO DE DADOS =====
+    // ===== REFERÊNCIAS =====
     const DB_ACCOUNTS = 'accounts';
     const DB_PLANOS = 'planos';
     const DB_CONFIG = 'config';
@@ -1821,7 +1839,6 @@
 
     // ===== FUNÇÕES DE ACESSO AO FIREBASE =====
     
-    // Contas
     async function getAccount(phone) {
       try {
         const snapshot = await database.ref(`${DB_ACCOUNTS}/${phone}`).once('value');
@@ -1860,7 +1877,6 @@
         const snapshot = await database.ref(DB_PLANOS).once('value');
         const data = snapshot.val();
         if (data) return data;
-        // Planos default
         const defaultPlanos = [
           { label: '1000 Kz · 3 dias', invest: 1000, dias: 3, retorno: 2600 },
           { label: '3000 Kz · 7 dias', invest: 3000, dias: 7, retorno: 6500 },
@@ -1990,7 +2006,6 @@
       const lista = await getSaquesAprovados();
       const acc = await getAccount(usuarioTelefone);
       const nome = acc ? acc.nome : 'Desconhecido';
-      
       lista.push({
         nome: nome,
         valor: valor,
@@ -2002,7 +2017,7 @@
       return lista;
     }
 
-    // Mensagens (Chat)
+    // Mensagens
     async function getMensagens() {
       try {
         const snapshot = await database.ref(DB_MENSAGENS).once('value');
@@ -2161,7 +2176,6 @@
 
     // ===== FUNÇÕES DE RENDERIZAÇÃO =====
     
-    // Chat
     async function renderChatContatos() {
       const container = document.getElementById('chatContatos');
       if (!container) return;
@@ -2752,7 +2766,7 @@
       document.getElementById('adminTransferenciaLimitGlobal').value = config.transferenciaLimitGlobal || 0;
       document.getElementById('adminTransferenciaLimitAtual').textContent = 'Atual: ' + formatCurrency(config.transferenciaLimitGlobal || 0);
 
-      // Select de utilizadores
+      // Selects de utilizadores
       const selectUser = document.getElementById('adminSelectUser');
       selectUser.innerHTML = '';
       const selectTransferUser = document.getElementById('adminSelectTransferUser');
@@ -3162,7 +3176,6 @@
 
     // ===== LISTENERS EM TEMPO REAL =====
     function iniciarListeners() {
-      // Listener para mensagens
       if (mensagensListener) mensagensListener.off();
       mensagensListener = database.ref(DB_MENSAGENS);
       mensagensListener.on('value', async () => {
@@ -3176,7 +3189,6 @@
         }
       });
 
-      // Listener para solicitações (admin)
       if (activeUserIsAdmin) {
         if (solicitacoesListener) solicitacoesListener.off();
         solicitacoesListener = database.ref(DB_SOLICITACOES);
@@ -3187,7 +3199,6 @@
         });
       }
 
-      // Listener para saques aprovados
       if (saquesAprovadosListener) saquesAprovadosListener.off();
       saquesAprovadosListener = database.ref(DB_SAQUES_APROVADOS);
       saquesAprovadosListener.on('value', () => {
@@ -3196,7 +3207,6 @@
         }
       });
 
-      // Listener para configurações
       if (configListener) configListener.off();
       configListener = database.ref(DB_CONFIG);
       configListener.on('value', async () => {
@@ -3210,7 +3220,6 @@
         }
       });
 
-      // Listener para conta do utilizador
       if (accountsListener) accountsListener.off();
       if (activeUserPhone) {
         accountsListener = database.ref(`${DB_ACCOUNTS}/${activeUserPhone}`);
@@ -3399,7 +3408,7 @@
       const accDest = await getAccount(telDest);
       if (!accDest) { showMsg('msgOp', 'Destinatário não encontrado.', 'error'); return; }
       
-      // VERIFICAR LIMITE DE TRANSFERÊNCIA
+      // VERIFICAÇÃO DO LIMITE DE TRANSFERÊNCIA
       const config = await getConfig();
       const limiteGlobal = config.transferenciaLimitGlobal || 0;
       const limiteUser = (accRem.limites && accRem.limites.transferenciaLimit) ? accRem.limites.transferenciaLimit : 0;
