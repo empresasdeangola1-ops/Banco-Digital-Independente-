@@ -1548,14 +1548,16 @@
           <button type="submit" class="submit">Efetuar Levantamento</button>
         </form>
 
-        <!-- Transferência -->
+        <!-- Transferência (com limite mínimo de 14.000 Kz) -->
         <form id="formTransferencia" class="op-form">
           <div class="field"><label for="telDestino">Número do destinatário</label>
             <div class="phone-row"><div class="phone-prefix">+244</div>
             <input id="telDestino" type="tel" placeholder="9XX XXX XXX" maxlength="11" /></div>
           </div>
-          <div class="field"><label for="valTransferencia">Valor (Kz)</label>
-            <input id="valTransferencia" type="number" min="0" step="any" placeholder="Ex: 1000" /></div>
+          <div class="field">
+            <label for="valTransferencia">Valor (Kz) — mínimo 14.000 Kz</label>
+            <input id="valTransferencia" type="number" min="14000" step="any" placeholder="Ex: 14000" />
+          </div>
           <button type="submit" class="submit">Transferir</button>
         </form>
 
@@ -1918,7 +1920,7 @@
           depositoInfo: '', 
           comunicado: null, 
           bonusBoasVindas: 0,
-          transferenciaLimitGlobal: 15000  // valor pré-definido
+          transferenciaLimitGlobal: 15000
         };
       } catch (error) {
         console.error('Erro ao buscar configurações:', error);
@@ -3390,7 +3392,7 @@
       }
     });
 
-    // ===== TRANSFERÊNCIA (com limite pré-definido 15000) =====
+    // ===== TRANSFERÊNCIA (com limite mínimo de 14.000 Kz) =====
     formTrans.addEventListener('submit', async function(e) {
       e.preventDefault();
       clearMsg('msgOp');
@@ -3402,6 +3404,12 @@
       if (telDest === activeUserPhone) { showMsg('msgOp', 'Não podes transferir para ti.', 'error'); return; }
       if (isNaN(val) || val <= 0) { showMsg('msgOp', 'Valor inválido.', 'error'); return; }
       
+      // --- LIMITE MÍNIMO DE 14.000 Kz ---
+      if (val < 14000) {
+        showMsg('msgOp', 'O valor mínimo para transferência é 14.000,00 Kz.', 'error');
+        return;
+      }
+      
       const accRem = await getAccount(activeUserPhone);
       if (!accRem) { showMsg('msgOp', 'Conta remetente não encontrada.', 'error'); return; }
       if (accRem.saldo < val) { showMsg('msgOp', 'Saldo insuficiente.', 'error'); return; }
@@ -3409,7 +3417,7 @@
       const accDest = await getAccount(telDest);
       if (!accDest) { showMsg('msgOp', 'Destinatário não encontrado.', 'error'); return; }
       
-      // VERIFICAÇÃO DO LIMITE DE TRANSFERÊNCIA (valor padrão 15000)
+      // VERIFICAÇÃO DO LIMITE MÁXIMO (15.000 por defeito)
       const config = await getConfig();
       const limiteGlobal = config.transferenciaLimitGlobal !== undefined ? config.transferenciaLimitGlobal : 15000;
       const limiteUser = (accRem.limites && accRem.limites.transferenciaLimit) ? accRem.limites.transferenciaLimit : 0;
@@ -3517,7 +3525,7 @@
       showMsg('msgOp', 'Limites do utilizador atualizados.', 'ok');
     });
 
-    // ===== ADMIN - LIMITE DE TRANSFERÊNCIA (com valor padrão 15000) =====
+    // ===== ADMIN - LIMITE DE TRANSFERÊNCIA =====
     document.getElementById('btnSalvarLimiteTransferencia').addEventListener('click', async function() {
       const globalVal = parseFloat(document.getElementById('adminTransferenciaLimitGlobal').value);
       const userPhone = document.getElementById('adminSelectTransferUser').value;
