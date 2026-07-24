@@ -1103,6 +1103,46 @@
       color: var(--primary);
       font-weight: 500;
     }
+    /* Estilos para limite de transferência */
+    .admin-limite-transferencia {
+      margin-top: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .admin-limite-transferencia .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 6px;
+    }
+    .admin-limite-transferencia .campo label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .admin-limite-transferencia .campo input {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: var(--text-primary);
+      font-size: 13px;
+      width: 100%;
+      max-width: 200px;
+      transition: var(--transition);
+    }
+    .admin-limite-transferencia .campo input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+      outline: none;
+    }
+    .admin-limite-transferencia .campo .atual {
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 500;
+      display: block;
+      margin-top: 2px;
+    }
     #chatContainer {
       display: flex;
       flex-direction: column;
@@ -1592,6 +1632,25 @@
             </div>
             <button class="submit" id="btnSalvarLimitesUser" style="margin-top:6px;">Salvar limites do utilizador</button>
           </div>
+          <!-- NOVO: Limite de Transferência -->
+          <div class="admin-limite-transferencia">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px;">🔁 Limite de Transferência entre Utilizadores</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Define um valor máximo que cada utilizador pode transferir por transação.</div>
+            <div class="campo">
+              <label>Limite Global de Transferência (Kz)</label>
+              <input id="adminTransferenciaLimitGlobal" type="number" step="any" min="0" placeholder="Ex: 50000" />
+              <span class="atual" id="adminTransferenciaLimitAtual">Atual: 0,00 Kz</span>
+            </div>
+            <div class="campo" style="margin-top:6px;">
+              <label>Limite por Utilizador (Kz) — sobrescreve o global</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <select id="adminSelectTransferUser" style="flex:1;min-width:150px;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text-primary);font-size:13px;font-family:var(--font);transition:var(--transition);"></select>
+                <input id="adminTransferenciaLimitUser" type="number" step="any" min="0" placeholder="Ex: 30000" style="flex:1;min-width:100px;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text-primary);font-size:13px;font-family:var(--font);transition:var(--transition);" />
+              </div>
+              <span class="atual" id="adminTransferenciaLimitUserAtual">Atual: não definido</span>
+            </div>
+            <button class="submit" id="btnSalvarLimiteTransferencia" style="margin-top:6px;">Salvar limites de transferência</button>
+          </div>
           <div class="admin-info-deposito">
             <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📝 Informações adicionais para depósito</div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">Este texto será exibido a todos os utilizadores na tela de depósito.</div>
@@ -1837,10 +1896,17 @@
       try {
         const snapshot = await database.ref(DB_CONFIG).once('value');
         const data = snapshot.val();
-        return data || { depositoMinGlobal: 0, saqueMinGlobal: 0, depositoInfo: '', comunicado: null, bonusBoasVindas: 0 };
+        return data || { 
+          depositoMinGlobal: 0, 
+          saqueMinGlobal: 0, 
+          depositoInfo: '', 
+          comunicado: null, 
+          bonusBoasVindas: 0,
+          transferenciaLimitGlobal: 0
+        };
       } catch (error) {
         console.error('Erro ao buscar configurações:', error);
-        return { depositoMinGlobal: 0, saqueMinGlobal: 0, depositoInfo: '', comunicado: null, bonusBoasVindas: 0 };
+        return { depositoMinGlobal: 0, saqueMinGlobal: 0, depositoInfo: '', comunicado: null, bonusBoasVindas: 0, transferenciaLimitGlobal: 0 };
       }
     }
 
@@ -2606,6 +2672,8 @@
     // ===== PAINEL ADMIN =====
     async function carregarPainelAdmin() {
       if (!activeUserIsAdmin) return;
+      
+      // Solicitações pendentes
       const solicitacoes = await getSolicitacoes();
       const pendentes = solicitacoes.filter(s => s.status === 'pendente');
       const container = document.getElementById('adminSolicitacoes');
@@ -2671,6 +2739,7 @@
         });
       }
 
+      // Configurações
       const config = await getConfig();
       document.getElementById('adminDepMinGlobal').value = config.depositoMinGlobal || 0;
       document.getElementById('adminSaqMinGlobal').value = config.saqueMinGlobal || 0;
@@ -2679,20 +2748,35 @@
       document.getElementById('adminBonusBoasVindas').value = config.bonusBoasVindas || 0;
       document.getElementById('adminBonusAtual').textContent = 'Atual: ' + formatCurrency(config.bonusBoasVindas || 0);
 
+      // Limite de Transferência Global
+      document.getElementById('adminTransferenciaLimitGlobal').value = config.transferenciaLimitGlobal || 0;
+      document.getElementById('adminTransferenciaLimitAtual').textContent = 'Atual: ' + formatCurrency(config.transferenciaLimitGlobal || 0);
+
+      // Select de utilizadores
       const selectUser = document.getElementById('adminSelectUser');
       selectUser.innerHTML = '';
+      const selectTransferUser = document.getElementById('adminSelectTransferUser');
+      selectTransferUser.innerHTML = '';
       const users = await getAllUsers();
       for (const u of users) {
         const opt = document.createElement('option');
         opt.value = u.telefone;
         opt.textContent = `${u.nome} (${formatPhoneDisplay(u.telefone)})`;
         selectUser.appendChild(opt);
+        const opt2 = document.createElement('option');
+        opt2.value = u.telefone;
+        opt2.textContent = `${u.nome} (${formatPhoneDisplay(u.telefone)})`;
+        selectTransferUser.appendChild(opt2);
       }
       if (users.length > 0) {
         carregarLimitesUser(users[0].telefone);
+        carregarLimiteTransferenciaUser(users[0].telefone);
       }
       selectUser.addEventListener('change', function() {
         carregarLimitesUser(this.value);
+      });
+      selectTransferUser.addEventListener('change', function() {
+        carregarLimiteTransferenciaUser(this.value);
       });
 
       renderAdminPlanos();
@@ -2710,6 +2794,20 @@
       const limites = acc.limites || {};
       document.getElementById('adminDepMinUser').value = limites.depositoMin || '';
       document.getElementById('adminSaqMinUser').value = limites.saqueMin || '';
+    }
+
+    async function carregarLimiteTransferenciaUser(phone) {
+      const acc = await getAccount(phone);
+      if (!acc) return;
+      const limites = acc.limites || {};
+      const val = limites.transferenciaLimit || '';
+      document.getElementById('adminTransferenciaLimitUser').value = val;
+      const span = document.getElementById('adminTransferenciaLimitUserAtual');
+      if (val && val > 0) {
+        span.textContent = 'Atual: ' + formatCurrency(val);
+      } else {
+        span.textContent = 'Atual: não definido (usa o limite global)';
+      }
     }
 
     // ===== ADMIN - PLANOS =====
@@ -2959,6 +3057,7 @@
           investimentos: [],
           historico: [],
           comunicadosApagados: [],
+          limites: {},
           criadoEm: new Date().toISOString()
         };
 
@@ -3281,29 +3380,48 @@
       }
     });
 
-    // ===== TRANSFERÊNCIA =====
+    // ===== TRANSFERÊNCIA (com limite) =====
     formTrans.addEventListener('submit', async function(e) {
       e.preventDefault();
       clearMsg('msgOp');
+      
       const telDest = digitsOnly(document.getElementById('telDestino').value);
       const val = parseFloat(document.getElementById('valTransferencia').value);
+      
       if (!isValidPhone(telDest)) { showMsg('msgOp', 'Número inválido.', 'error'); return; }
       if (telDest === activeUserPhone) { showMsg('msgOp', 'Não podes transferir para ti.', 'error'); return; }
       if (isNaN(val) || val <= 0) { showMsg('msgOp', 'Valor inválido.', 'error'); return; }
+      
       const accRem = await getAccount(activeUserPhone);
       if (!accRem) { showMsg('msgOp', 'Conta remetente não encontrada.', 'error'); return; }
       if (accRem.saldo < val) { showMsg('msgOp', 'Saldo insuficiente.', 'error'); return; }
+      
       const accDest = await getAccount(telDest);
       if (!accDest) { showMsg('msgOp', 'Destinatário não encontrado.', 'error'); return; }
+      
+      // VERIFICAR LIMITE DE TRANSFERÊNCIA
+      const config = await getConfig();
+      const limiteGlobal = config.transferenciaLimitGlobal || 0;
+      const limiteUser = (accRem.limites && accRem.limites.transferenciaLimit) ? accRem.limites.transferenciaLimit : 0;
+      const limite = Math.max(limiteGlobal, limiteUser);
+      
+      if (limite > 0 && val > limite) {
+        showMsg('msgOp', `Valor máximo para transferência é ${formatCurrency(limite)}.`, 'error');
+        return;
+      }
+      
       accRem.saldo -= val;
       accDest.saldo = (accDest.saldo || 0) + val;
+      
       await saveAccount(activeUserPhone, accRem);
       await saveAccount(telDest, accDest);
+      
       await registrarMovimento(activeUserPhone, 'transferência enviada', val, 'Para ' + accDest.nome);
       const accDestAtualizado = await getAccount(telDest);
       if (accDestAtualizado) {
         await registrarMovimento(telDest, 'transferência recebida', val, 'De ' + accRem.nome);
       }
+      
       document.getElementById('sucSaldo').textContent = formatCurrency(accRem.saldo);
       showMsg('msgOp', 'Transferência de ' + formatCurrency(val) + ' para ' + accDest.nome + ' concluída.', 'ok');
       formTrans.reset();
@@ -3387,6 +3505,44 @@
       acc.limites.saqueMin = saq;
       await saveAccount(phone, acc);
       showMsg('msgOp', 'Limites do utilizador atualizados.', 'ok');
+    });
+
+    // ===== ADMIN - LIMITE DE TRANSFERÊNCIA =====
+    document.getElementById('btnSalvarLimiteTransferencia').addEventListener('click', async function() {
+      const globalVal = parseFloat(document.getElementById('adminTransferenciaLimitGlobal').value) || 0;
+      const userPhone = document.getElementById('adminSelectTransferUser').value;
+      const userVal = parseFloat(document.getElementById('adminTransferenciaLimitUser').value) || 0;
+      
+      if (globalVal < 0) {
+        showMsg('msgOp', 'O limite global não pode ser negativo.', 'error');
+        return;
+      }
+      if (userVal < 0) {
+        showMsg('msgOp', 'O limite do utilizador não pode ser negativo.', 'error');
+        return;
+      }
+      
+      const config = await getConfig();
+      config.transferenciaLimitGlobal = globalVal;
+      await saveConfig(config);
+      document.getElementById('adminTransferenciaLimitAtual').textContent = 'Atual: ' + formatCurrency(globalVal);
+      
+      if (userPhone) {
+        const acc = await getAccount(userPhone);
+        if (acc) {
+          if (!acc.limites) acc.limites = {};
+          acc.limites.transferenciaLimit = userVal;
+          await saveAccount(userPhone, acc);
+          const span = document.getElementById('adminTransferenciaLimitUserAtual');
+          if (userVal > 0) {
+            span.textContent = 'Atual: ' + formatCurrency(userVal);
+          } else {
+            span.textContent = 'Atual: não definido (usa o limite global)';
+          }
+        }
+      }
+      
+      showMsg('msgOp', 'Limites de transferência atualizados.', 'ok');
     });
 
     // ===== ADMIN - INFORMAÇÕES DE DEPÓSITO =====
